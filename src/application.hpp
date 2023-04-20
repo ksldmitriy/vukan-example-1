@@ -12,11 +12,13 @@ class Application {
 private:
 
   unique_ptr<vk::Instance> instance;
+  unique_ptr<vk::Device> device;
 
   void InitVulkan();
   void Prepare();
 
   void CreateInstance();
+  void CreateDevice();
 public:
   Application() = default;
   void Run();

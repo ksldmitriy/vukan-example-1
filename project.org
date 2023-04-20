@@ -1,0 +1,12 @@
+* Realistic tasks
+
+** TODO 
+- [X] Init vulkan
+  - [X] Create instance
+  - [X] Create device
+
+** DONE
+
+* TODO(never to be honest)
+- [ ] <- If this is checked, you are really cool
+  - [ ] Choose physical device
