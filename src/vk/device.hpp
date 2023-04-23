@@ -1,7 +1,10 @@
 #pragma once
 #include "exception.hpp"
 #include "physical_device.hpp"
+#include "queue.hpp"
 #include "tools.hpp"
+#include <algorithm>
+#include <vulkan/vulkan_core.h>
 
 using namespace std;
 
@@ -10,18 +13,24 @@ namespace vk {
 class DeviceMemory;
 
 struct DeviceCreateInfo {
-  vector<string> extensions;
-  vector<string> layers;
-  uint32_t queue_family;
-  VkPhysicalDeviceFeatures features;
+  struct QueueRequest {
+    VkQueueFlags flags;
+    Queue *queue;
+  };
+
+  vector<QueueRequest> queue_requests;
 };
 
 class Device {
 private:
   VkDevice handle;
   shared_ptr<PhysicalDevice> physical_device;
-  VkQueue queue;
-  uint32_t queue_family;
+
+  static constexpr float queue_priority = 1;
+
+  vector<VkDeviceQueueCreateInfo>
+  GenerateQueueCreateInfos(vector<DeviceCreateInfo::QueueRequest> &request,
+                           vector<uint32_t> &queues_family_indices);
 
 public:
   Device(shared_ptr<PhysicalDevice> physical_device,
@@ -31,12 +40,6 @@ public:
 
   PhysicalDevice &GetPhysicalDevice();
   VkDevice GetHandle();
-  uint32_t ChooseQueueFamily(VkQueueFlags requirements);
-  uint32_t ChooseMemoryType(VkMemoryPropertyFlags properties,
-                            VkMemoryHeapFlags heap_properties,
-                            uint32_t memory_types);
-  VkQueue GetQueue();
-  uint32_t GetQueueFamily();
 };
 
 } // namespace vk

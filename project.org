@@ -1,12 +1,21 @@
 * Realistic tasks
 
-** TODO 
-- [X] Init vulkan
+** Current tasks 
+*** [-] Init vulkan
   - [X] Create instance
-  - [X] Create device
+  - [-] Create device
+    - [X] Choose features (removed)
+    - [X] Choose layers (removed)
+    - [ ] Queues
+      - [ ] Create queue class
+      - [ ] Choose queues
+      - [ ] Return chose queues 
 
-** DONE
+** Ideas
 
-* TODO(never to be honest)
-- [ ] <- If this is checked, you are really cool
+** Archive
+
+* Far future tasks
+** [ ] <- If this is checked, you are really cool
   - [ ] Choose physical device
+  - create several queues of same family if possible

@@ -1,43 +1,25 @@
 #include "device.hpp"
 #include "device_memory.hpp"
+#include "templates.hpp"
+#include <algorithm>
+#include <cstdint>
+#include <iterator>
+#include <vulkan/vulkan_core.h>
 
 namespace vk {
 
 Device::Device(shared_ptr<PhysicalDevice> physical_device,
                DeviceCreateInfo &create_info) {
   this->physical_device = physical_device;
-  queue_family = create_info.queue_family;
 
-  // queue create info
-  VkDeviceQueueCreateInfo vk_queue_create_info;
-  vk_queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-  vk_queue_create_info.pNext = nullptr;
-  vk_queue_create_info.flags = 0;
-  vk_queue_create_info.queueCount = 1;
-  vk_queue_create_info.queueFamilyIndex = queue_family;
-  float queue_priority = 0;
-  vk_queue_create_info.pQueuePriorities = &queue_priority;
+  vector<uint32_t> queue_family_indices;
+  vector<VkDeviceQueueCreateInfo> queue_create_infos = GenerateQueueCreateInfos(
+      create_info.queue_requests, queue_family_indices);
 
   // device create info
-  VkDeviceCreateInfo vk_create_info;
-  vk_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-  vk_create_info.pNext = nullptr;
-  vk_create_info.flags = 0;
-
-  vk_create_info.queueCreateInfoCount = 1;
-  vk_create_info.pQueueCreateInfos = &vk_queue_create_info;
-
-  vector<const char *> layers_names_pp =
-      tools::string_vector_to_c_array(create_info.layers);
-  vk_create_info.enabledLayerCount = layers_names_pp.size();
-  vk_create_info.ppEnabledLayerNames = layers_names_pp.data();
-
-  vector<const char *> extensions_names_pp =
-      tools::string_vector_to_c_array(create_info.extensions);
-  vk_create_info.enabledExtensionCount = extensions_names_pp.size();
-  vk_create_info.ppEnabledExtensionNames = extensions_names_pp.data();
-
-  vk_create_info.pEnabledFeatures = &create_info.features;
+  VkDeviceCreateInfo vk_create_info = device_create_info_template;
+  vk_create_info.queueCreateInfoCount = queue_create_infos.size();
+  vk_create_info.pQueueCreateInfos = queue_create_infos.data();
 
   VkResult result = vkCreateDevice(physical_device->GetHandle(),
                                    &vk_create_info, nullptr, &handle);
@@ -45,27 +27,48 @@ Device::Device(shared_ptr<PhysicalDevice> physical_device,
     throw VulkanException("cant create device");
   }
 
-  // get queue
-  vkGetDeviceQueue(handle, queue_family, 0, &queue);
+  for (int i = 0; i < create_info.queue_requests.size(); i++) {
+    uint32_t family = queue_family_indices[i];
+    VkQueue queue;
+    vkGetDeviceQueue(handle, family, 0, &queue);
+
+    *create_info.queue_requests[i].queue = Queue(queue, family);
+  }
 }
 
-VkQueue Device::GetQueue() { return queue; }
+vector<VkDeviceQueueCreateInfo> Device::GenerateQueueCreateInfos(
+    vector<DeviceCreateInfo::QueueRequest> &request,
+    vector<uint32_t> &queues_family_indices) {
+  vector<uint32_t> queue_families;
 
-uint32_t Device::GetQueueFamily() { return queue_family; }
+  queue_families.clear();
+
+  for (int i = 0; i < request.size(); i++) {
+    uint32_t family = physical_device->ChooseQueueFamily(request[i].flags);
+
+    queue_families.push_back(family);
+    queue_families.push_back(family);
+  }
+
+  auto end = unique(queue_families.begin(), queue_families.end());
+  queue_families.resize(distance(queue_families.begin(), end));
+
+  vector<VkDeviceQueueCreateInfo> create_infos;
+
+  for (int i = 0; i < queue_families.size(); i++) {
+    VkDeviceQueueCreateInfo create_info = vk::queue_create_info_template;
+    create_info.queueFamilyIndex = queue_families[i];
+    create_info.queueCount = 1;
+    create_info.pQueuePriorities = &queue_priority;
+
+    create_infos.push_back(create_info);
+  }
+
+  return create_infos;
+}
 
 PhysicalDevice &Device::GetPhysicalDevice() { return *physical_device; }
 
 VkDevice Device::GetHandle() { return handle; }
-
-uint32_t Device::ChooseQueueFamily(VkQueueFlags requirements) {
-  return physical_device->ChooseQueueFamily(requirements);
-}
-
-uint32_t Device::ChooseMemoryType(VkMemoryPropertyFlags properties,
-                                  VkMemoryHeapFlags heap_properties,
-                                  uint32_t memory_types) {
-  return physical_device->ChooseMemoryType(properties, heap_properties,
-                                           memory_types);
-}
 
 } // namespace vk

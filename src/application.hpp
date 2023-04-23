@@ -14,6 +14,8 @@ private:
   unique_ptr<vk::Instance> instance;
   unique_ptr<vk::Device> device;
 
+  vk::Queue graphics_queue;
+ 
   void InitVulkan();
   void Prepare();
 

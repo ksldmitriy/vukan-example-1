@@ -2,6 +2,21 @@
 
 namespace vk {
 
+VkDeviceQueueCreateInfo queue_create_info_template = {
+    .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+    .pNext = nullptr,
+    .flags = 0};
+
+VkDeviceCreateInfo device_create_info_template = {
+    .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+    .pNext = nullptr,
+    .flags = 0,
+    .enabledLayerCount = 0,
+    .ppEnabledLayerNames = nullptr,
+    .enabledExtensionCount = 0,
+    .ppEnabledExtensionNames = nullptr,
+    .pEnabledFeatures = nullptr};
+
 VkBufferMemoryBarrier buffer_barrier_template = {
     .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
     .pNext = nullptr,

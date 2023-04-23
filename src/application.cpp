@@ -1,6 +1,7 @@
 #include "application.hpp"
 #include "vk/device.hpp"
 #include "vk/instance.hpp"
+#include <memory>
 #include <vulkan/vulkan_core.h>
 
 void Application::Run() {
@@ -29,14 +30,17 @@ void Application::CreateInstance() {
 }
 
 void Application::CreateDevice() {
-  vk::PhysicalDevice *physical_device = instance->physical_devices[0].get();
+  shared_ptr<vk::PhysicalDevice> physical_device =
+      instance->physical_devices[0];
+
+  vk::DeviceCreateInfo::QueueRequest graphics_queue_request;
+  graphics_queue_request.flags = VK_QUEUE_GRAPHICS_BIT;
+  graphics_queue_request.queue = &graphics_queue;
 
   vk::DeviceCreateInfo create_info;
-  create_info.extensions.clear();
-  create_info.layers.clear();
-  create_info.features = {0};
-  create_info.queue_family = 111;
-  
+  create_info.queue_requests.push_back(graphics_queue_request);
+
+  device = unique_ptr<vk::Device>(new vk::Device(physical_device, create_info));
 }
 
 void Application::Prepare() {}

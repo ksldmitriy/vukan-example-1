@@ -3,6 +3,8 @@
 
 namespace vk {
 
+extern VkDeviceCreateInfo device_create_info_template;
+extern VkDeviceQueueCreateInfo queue_create_info_template;
 extern VkBufferMemoryBarrier buffer_barrier_template;
 extern VkCommandBufferBeginInfo command_buffer_begin_info_template;
 extern VkCommandPoolCreateInfo command_pool_create_info_template;
