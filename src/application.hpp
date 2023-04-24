@@ -1,27 +1,36 @@
 #pragma once
+#include "vk/device.hpp"
 #include "vk/exception.hpp"
 #include "vk/instance.hpp"
-#include "vk/device.hpp"
+#include "window.hpp"
+#include <GLFW/glfw3.h>
 #include <iostream>
 #include <memory>
-#include <GLFW/glfw3.h>
+#include "vk/swapchain.hpp"
 
 using namespace std;
 
 class Application {
 private:
-
   unique_ptr<vk::Instance> instance;
   unique_ptr<vk::Device> device;
 
+  unique_ptr<Window> window;
+
+  unique_ptr<vk::Swapchain> swapchain;
+  
   vk::Queue graphics_queue;
- 
+
   void InitVulkan();
   void Prepare();
 
   void CreateInstance();
   void CreateDevice();
+
 public:
   Application() = default;
+  Application(Application &) = delete;
+  Application &operator=(Application &) = delete;
+
   void Run();
 };

@@ -21,19 +21,28 @@ Device::Device(shared_ptr<PhysicalDevice> physical_device,
   vk_create_info.queueCreateInfoCount = queue_create_infos.size();
   vk_create_info.pQueueCreateInfos = queue_create_infos.data();
 
+  const char* extensions = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+  vk_create_info.enabledExtensionCount = 1;
+  vk_create_info.ppEnabledExtensionNames = &extensions;
+
+  cout << "device create info generated" << endl;
+  
   VkResult result = vkCreateDevice(physical_device->GetHandle(),
                                    &vk_create_info, nullptr, &handle);
   if (result) {
     throw VulkanException("cant create device");
   }
+  cout << "device created" << endl;
 
   for (int i = 0; i < create_info.queue_requests.size(); i++) {
     uint32_t family = queue_family_indices[i];
     VkQueue queue;
     vkGetDeviceQueue(handle, family, 0, &queue);
-
+	cout << 1 << endl;
     *create_info.queue_requests[i].queue = Queue(queue, family);
   }
+
+  cout << "device queues returned" << endl;
 }
 
 vector<VkDeviceQueueCreateInfo> Device::GenerateQueueCreateInfos(
@@ -47,7 +56,7 @@ vector<VkDeviceQueueCreateInfo> Device::GenerateQueueCreateInfos(
     uint32_t family = physical_device->ChooseQueueFamily(request[i].flags);
 
     queue_families.push_back(family);
-    queue_families.push_back(family);
+    queues_family_indices.push_back(family);
   }
 
   auto end = unique(queue_families.begin(), queue_families.end());

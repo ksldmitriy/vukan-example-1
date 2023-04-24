@@ -1,21 +1,27 @@
 * Realistic tasks
 
-** Current tasks 
-*** [-] Init vulkan
-  - [X] Create instance
-  - [-] Create device
-    - [X] Choose features (removed)
-    - [X] Choose layers (removed)
-    - [ ] Queues
-      - [ ] Create queue class
-      - [ ] Choose queues
-      - [ ] Return chose queues 
+** Current tasks
+- [X] Window and Swapchain 
+  - [X] Create window class
+  - [X] Create swapchain class
+    - [X] Get swapchain from window
 
 ** Ideas
 
 ** Archive
+*** Init vulkan
+- [X] Create instance
+  - [X] Create device
+    - [X] Choose features (removed)
+    - [X] Choose layers (removed)
+    - [X] Queues
+      - [X] Create queue class
+      - [X] Choose queues
+      - [X] Return chose queues 
 
 * Far future tasks
-** [ ] <- If this is checked, you are really cool
+** [ ] If this is checked, you are really cool
   - [ ] Choose physical device
+  - [ ] Swapchain
+    - [ ] Choose: format, present mode, transform and extend
   - create several queues of same family if possible
