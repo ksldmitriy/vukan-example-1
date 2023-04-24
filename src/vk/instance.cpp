@@ -1,4 +1,5 @@
 #include "instance.hpp"
+#include "../logs.hpp"
 
 namespace vk {
 
@@ -28,6 +29,8 @@ void Instance::CreateInstance(InstanceCreateInfo &create_info) {
   if (result) {
     throw VulkanException("cant create vk instance");
   }
+
+  DEBUG("instance created");
 }
 
 VkInstance Instance::GetHandle() { return handle; }

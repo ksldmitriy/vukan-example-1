@@ -2,11 +2,12 @@
 #include "vk/device.hpp"
 #include "vk/exception.hpp"
 #include "vk/instance.hpp"
+#include "vk/swapchain.hpp"
 #include "window.hpp"
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <memory>
-#include "vk/swapchain.hpp"
+#include "logs.hpp"
 
 using namespace std;
 
@@ -18,7 +19,7 @@ private:
   unique_ptr<Window> window;
 
   unique_ptr<vk::Swapchain> swapchain;
-  
+
   vk::Queue graphics_queue;
 
   void InitVulkan();

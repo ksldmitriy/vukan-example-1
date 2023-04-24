@@ -2,9 +2,8 @@
 #include "device_memory.hpp"
 #include "templates.hpp"
 #include <algorithm>
-#include <cstdint>
-#include <iterator>
 #include <vulkan/vulkan_core.h>
+#include "../logs.hpp"
 
 namespace vk {
 
@@ -25,14 +24,15 @@ Device::Device(shared_ptr<PhysicalDevice> physical_device,
   vk_create_info.enabledExtensionCount = 1;
   vk_create_info.ppEnabledExtensionNames = &extensions;
 
-  cout << "device create info generated" << endl;
+  TRACE("device create info generated");
   
   VkResult result = vkCreateDevice(physical_device->GetHandle(),
                                    &vk_create_info, nullptr, &handle);
   if (result) {
     throw VulkanException("cant create device");
   }
-  cout << "device created" << endl;
+
+  INFO("device created");
 
   for (int i = 0; i < create_info.queue_requests.size(); i++) {
     uint32_t family = queue_family_indices[i];
@@ -42,7 +42,7 @@ Device::Device(shared_ptr<PhysicalDevice> physical_device,
     *create_info.queue_requests[i].queue = Queue(queue, family);
   }
 
-  cout << "device queues returned" << endl;
+  TRACE("device queues returned");
 }
 
 vector<VkDeviceQueueCreateInfo> Device::GenerateQueueCreateInfos(

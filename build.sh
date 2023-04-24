@@ -1,4 +1,8 @@
 #!/bin/bash
+
+rm debug_logs
+rm info_logs
+
 echo === CMAKE ===
 
 cmake -S ./src -B ./out  
@@ -16,3 +20,8 @@ echo === SHADERS ===
 echo === RUN ===
 ./out/best_program
 
+cat debug_logs
+
+echo
+
+cat info_logs 

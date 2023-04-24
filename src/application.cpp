@@ -1,19 +1,9 @@
 #include "application.hpp"
-#include "vk/device.hpp"
-#include "vk/instance.hpp"
-#include "vk/swapchain.hpp"
-#include "window.hpp"
-#include <memory>
-#include <vulkan/vulkan_core.h>
 
 void Application::Run() {
   window = unique_ptr<Window>(new Window());
 
-  cout << "window created" << endl;
-  
   InitVulkan();
-
-  cout << "vulkan inited" << endl;
 
   window->CreateSurface(instance.get());
 
@@ -27,9 +17,10 @@ void Application::Run() {
 
 void Application::InitVulkan() {
   CreateInstance();
-  cout << "instace created " << endl;
+
   CreateDevice();
-  cout << "device created" << endl;
+
+  INFO("vulkan inited");
 }
 
 void Application::Prepare() {}

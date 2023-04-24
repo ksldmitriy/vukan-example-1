@@ -1,8 +1,11 @@
 #include "main.hpp"
+#include "logs.hpp"
 
 int main() {
- Application application;
+  setup_logs();
 
+  Application application;
+  
   try {
     application.Run();
   } catch (Exception &e) {

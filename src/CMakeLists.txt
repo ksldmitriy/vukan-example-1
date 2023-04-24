@@ -22,6 +22,8 @@ add_executable(${PROJECT_NAME} ${vulkan_test_SRC})
 
 link_directories(/usr/lib)
 
-target_link_libraries(${PROJECT_NAME} libvulkan.so libglfw.so)
+target_link_libraries(${PROJECT_NAME} PRIVATE libvulkan.so libglfw.so)
 
+add_subdirectory(../libs/spdlog ${CMAKE_CURRENT_BINARY_DIR}/spdlog)
+target_link_libraries(${PROJECT_NAME} PRIVATE spdlog)
 

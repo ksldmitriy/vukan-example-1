@@ -1,6 +1,7 @@
 #include "swapchain.hpp"
 #include "device.hpp"
 #include "templates.hpp"
+#include "../logs.hpp"
 
 namespace vk {
 
@@ -54,6 +55,8 @@ Swapchain::Swapchain(Device *device, VkSurfaceKHR surface) {
     throw VulkanException("cant create swapchain");
   }
 
+  DEBUG("swapchain created");
+
   uint32_t swapchain_images_count = 0;
   result = vkGetSwapchainImagesKHR(device->GetHandle(), handle,
                                    &swapchain_images_count, nullptr);
@@ -62,6 +65,8 @@ Swapchain::Swapchain(Device *device, VkSurfaceKHR surface) {
   } else if (!swapchain_images_count) {
     throw VulkanException("swapchain images count is 0");
   }
+
+  TRACE("swapchain images count is {}", swapchain_images_count);
 
   images.resize(swapchain_images_count);
 
