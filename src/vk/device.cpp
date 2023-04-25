@@ -29,7 +29,7 @@ Device::Device(shared_ptr<PhysicalDevice> physical_device,
   VkResult result = vkCreateDevice(physical_device->GetHandle(),
                                    &vk_create_info, nullptr, &handle);
   if (result) {
-    throw VulkanException("cant create device");
+    throw CriticalException("cant create device");
   }
 
   INFO("device created");
@@ -38,7 +38,6 @@ Device::Device(shared_ptr<PhysicalDevice> physical_device,
     uint32_t family = queue_family_indices[i];
     VkQueue queue;
     vkGetDeviceQueue(handle, family, 0, &queue);
-	cout << 1 << endl;
     *create_info.queue_requests[i].queue = Queue(queue, family);
   }
 

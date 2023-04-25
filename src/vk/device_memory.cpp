@@ -18,7 +18,7 @@ DeviceMemory::DeviceMemory(Device &device, VkDeviceSize size, uint32_t type) {
   VkResult result =
       vkAllocateMemory(this->device, &vk_allocate_info, nullptr, &handle);
   if (result) {
-    throw VulkanException("cant allocate memory");
+    throw CriticalException("cant allocate memory");
   }
 
   MemorySegment segment;
@@ -53,7 +53,7 @@ void *DeviceMemory::MapMemory(VkBuffer buffer) {
   VkResult result = vkMapMemory(device, handle, mapped_segment.offset,
                                 mapped_segment.size, 0, &mapped_ptr);
   if (result) {
-    throw VulkanException("cant map memory");
+    throw CriticalException("cant map memory");
   }
 
   cout << mapped_segment.offset << " " << buffer_segment.buffer_offset << endl;
@@ -92,7 +92,7 @@ void DeviceMemory::Flush() {
 
   VkResult result = vkFlushMappedMemoryRanges(device, 1, &mapped_range);
   if (result) {
-    throw VulkanException("cant flush mapped memory");
+    throw CriticalException("cant flush mapped memory");
   }
 }
 
@@ -124,7 +124,7 @@ void DeviceMemory::BindBuffer(Buffer &buffer) {
   VkResult result =
       vkBindBufferMemory(device, buffer.GetHandle(), handle, aligned_pos);
   if (result) {
-    throw VulkanException("cant bind buffer to memory");
+    throw CriticalException("cant bind buffer to memory");
   }
 
   buffer.memory = this;
@@ -179,7 +179,7 @@ uint32_t DeviceMemory::FindSegment(VkBuffer buffer) {
     }
   }
 
-  throw VulkanException("no suck buffer binded to device memory");
+  throw CriticalException("no suck buffer binded to device memory");
 }
 
 void DeviceMemory::OccupieSegment(uint32_t segment_index, VkDeviceSize size,
@@ -230,7 +230,7 @@ uint32_t DeviceMemory::FindSuitableSegment(VkMemoryRequirements requirements) {
   }
 
   if (optimal_segment == -1) {
-    throw VulkanException("cant find empty memory range");
+    throw CriticalException("cant find empty memory range");
   }
 
   return optimal_segment;

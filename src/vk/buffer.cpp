@@ -20,7 +20,7 @@ Buffer::Buffer(VkDevice device, BufferCreateInfo &create_info) {
 
   VkResult result = vkCreateBuffer(device, &vk_create_info, nullptr, &handle);
   if (result) {
-    throw VulkanException("cant create buffer");
+    throw CriticalException("cant create buffer");
   }
 
   vkGetBufferMemoryRequirements(device, handle, &requirements);

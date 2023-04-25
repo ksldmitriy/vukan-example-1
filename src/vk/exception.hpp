@@ -3,11 +3,26 @@
 
 using namespace std;
 
-class VulkanException : public Exception {
-private:
-  string message;
+namespace vk {
 
+class CriticalException : public ::CriticalException {
+private:
 public:
-  VulkanException(string message) { this->message = message; }
-  operator string() { return message; }
+  CriticalException(string message) : ::CriticalException(message){};
 };
+
+class MemoryTypeNotFoundException : public IException {
+private:
+public:
+  MemoryTypeNotFoundException() : ::IException(){};
+  string Message() { return "suitable memory type not found"; };
+};
+
+class QueueFamilyNotFoundException : public IException {
+private:
+public:
+  QueueFamilyNotFoundException() : ::IException(){};
+  string Message() { return "suitable queue family not found"; };
+};
+
+} // namespace vk

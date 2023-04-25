@@ -7,8 +7,6 @@ void Application::Run() {
 
   window->CreateSurface(instance.get());
 
-  cout << "surface created" << endl;
-
   swapchain = unique_ptr<vk::Swapchain>(
       new vk::Swapchain(device.get(), window->GetSurface()));
 
@@ -20,7 +18,7 @@ void Application::InitVulkan() {
 
   CreateDevice();
 
-  INFO("vulkan inited");
+  DEBUG("vulkan inited");
 }
 
 void Application::Prepare() {}

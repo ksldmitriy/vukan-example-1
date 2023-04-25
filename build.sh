@@ -1,7 +1,7 @@
 #!/bin/bash
 
-rm debug_logs
-rm info_logs
+rm debug-logs
+rm info-logs
 
 echo === CMAKE ===
 
@@ -20,8 +20,3 @@ echo === SHADERS ===
 echo === RUN ===
 ./out/best_program
 
-cat debug_logs
-
-echo
-
-cat info_logs 

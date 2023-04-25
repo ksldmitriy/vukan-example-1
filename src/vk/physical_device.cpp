@@ -1,4 +1,5 @@
 #include "physical_device.hpp"
+#include "exception.hpp"
 
 namespace vk {
 
@@ -64,7 +65,7 @@ uint32_t PhysicalDevice::ChooseQueueFamily(VkQueueFlags requirements) {
     }
   }
 
-  throw VulkanException("cant find needed queue");
+  throw QueueFamilyNotFoundException(); 
 };
 
 uint32_t PhysicalDevice::ChooseMemoryType(VkMemoryPropertyFlags properties,
@@ -88,7 +89,7 @@ uint32_t PhysicalDevice::ChooseMemoryType(VkMemoryPropertyFlags properties,
     }
   }
 
-  throw VulkanException("cant find needed memory type");
+  throw MemoryTypeNotFoundException(); 
 }
 
 } // namespace vk

@@ -52,7 +52,7 @@ Swapchain::Swapchain(Device *device, VkSurfaceKHR surface) {
   result =
       vkCreateSwapchainKHR(device->GetHandle(), &create_info, nullptr, &handle);
   if (result) {
-    throw VulkanException("cant create swapchain");
+    throw CriticalException("cant create swapchain");
   }
 
   DEBUG("swapchain created");
@@ -61,9 +61,9 @@ Swapchain::Swapchain(Device *device, VkSurfaceKHR surface) {
   result = vkGetSwapchainImagesKHR(device->GetHandle(), handle,
                                    &swapchain_images_count, nullptr);
   if (result) {
-    throw VulkanException("cant get swapchain images count");
+    throw CriticalException("cant get swapchain images count");
   } else if (!swapchain_images_count) {
-    throw VulkanException("swapchain images count is 0");
+    throw CriticalException("swapchain images count is 0");
   }
 
   TRACE("swapchain images count is {}", swapchain_images_count);
@@ -73,7 +73,7 @@ Swapchain::Swapchain(Device *device, VkSurfaceKHR surface) {
   result = vkGetSwapchainImagesKHR(device->GetHandle(), handle,
                                    &swapchain_images_count, images.data());
   if (result) {
-    throw VulkanException("cant get swapchain images");
+    throw CriticalException("cant get swapchain images");
   }
 }
 

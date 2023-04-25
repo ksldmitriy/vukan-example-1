@@ -1,15 +1,6 @@
 * Realistic tasks
 
 ** Current tasks
-*** Exceptions and Logs
-- [ ] Exceptions
-  - [ ] Critical exception
-
-*** Window and Swapchain creation
-- [X] Create window class
-- [ ] Window error handling
-- [X] Create swapchain class
-  - [X] Get swapchain from window
 
 
 ** Ideas
@@ -24,7 +15,16 @@
       - [X] Create queue class
       - [X] Choose queues
       - [X] Return chose queues
+        
+*** Exceptions and Logs
+- [X] Exceptions
+- [X] Critical exception
 
+*** Window and Swapchain creation
+- [X] Create window class
+- [X] Window error handling
+- [X] Create swapchain class
+  - [X] Get swapchain from window
 
 
 * Far future tasks

@@ -8,9 +8,9 @@ int main() {
   
   try {
     application.Run();
-  } catch (Exception &e) {
-    cout << (string)e << endl;
+  } catch (IException &e) {
+	ERROR("application exit afer unhandled excpetion: {0}", (string)e);
   };
 
-  cout << "aeee" << endl;
+  INFO("aeee");
 }

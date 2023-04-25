@@ -17,14 +17,18 @@ Window::Window() {
 	cout << "cant create window" << endl;
     throw -1;
   }
+
+  DEBUG("window created");
 }
 
 void Window::CreateSurface(vk::Instance *instance) {
   VkResult result =
       glfwCreateWindowSurface(instance->GetHandle(), window, nullptr, &surface);
   if (result) {
-    throw VulkanException("cant create window surface");
+    throw CriticalException("cant create window surface");
   }
+
+  DEBUG("surace created");
 }
 
 void Window::GetInstanceExtensions(const char **&extensions,
