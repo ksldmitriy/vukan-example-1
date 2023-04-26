@@ -1,6 +1,4 @@
 #include "application.hpp"
-#include <memory>
-#include <vulkan/vulkan_core.h>
 
 void Application::Run() {
   window = unique_ptr<Window>(new Window());
@@ -26,6 +24,14 @@ void Application::InitVulkan() {
 void Application::Prepare() {
   CreateRenderPass();
   InitFramebuffers();
+  CreateGraphicsPipeline();
+}
+
+void Application::CreateGraphicsPipeline() {
+  unique_ptr<vk::ShaderModule> vertex_shader =
+      make_unique<vk::ShaderModule>(*device, "shaders/vert.spv");
+  unique_ptr<vk::ShaderModule> frag_shader =
+      make_unique<vk::ShaderModule>(*device, "shaders/frag.spv");
 }
 
 void Application::InitFramebuffers() {
@@ -47,6 +53,8 @@ void Application::InitFramebuffers() {
       throw vk::CriticalException("cant create framebuffer");
     }
   }
+
+  DEBUG("framebuffers created");
 }
 
 void Application::CreateRenderPass() {

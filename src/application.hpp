@@ -9,6 +9,7 @@
 #include <memory>
 #include "logs.hpp"
 #include "vk/command_pool.hpp"
+#include "vk/shader_module.hpp"
 
 using namespace std;
 
@@ -32,6 +33,7 @@ private:
 
   void CreateRenderPass();
   void InitFramebuffers();
+  void CreateGraphicsPipeline();
   
   void CreateInstance();
   void CreateDevice();

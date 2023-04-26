@@ -1,11 +1,6 @@
 * Realistic tasks
 
 ** Current tasks
-*** Render pass
-- [X] Create dump render pass
-  
-*** Framebuffers
-- [X] Init framebuffers
 
 ** Commit logs
 
@@ -39,6 +34,17 @@
 - [X] Provide integration with queue class
 
 
+*** Render pass
+- [X] Create dump render pass
+  
+*** Framebuffers
+- [X] Init framebuffers
+
+ *** Shader module
+- [X] Create shader module class
+- [X] Read shader from file
+- [X] Load shader to vulkan
+ 
 * Far future tasks
 ** [ ] If this is checked, you are really cool
   - [ ] Choose physical device
