@@ -1,3 +1,4 @@
+#pragma once
 #include <cstdint>
 #include <vulkan/vulkan.h>
 
@@ -15,6 +16,7 @@ public:
   Queue(VkQueue handle, uint32_t family);
 
   VkQueue GetHandle();
+  uint32_t GetFamily();
 };
 
 } // namespace vk

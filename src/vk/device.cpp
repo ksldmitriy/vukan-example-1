@@ -32,7 +32,7 @@ Device::Device(shared_ptr<PhysicalDevice> physical_device,
     throw CriticalException("cant create device");
   }
 
-  INFO("device created");
+  DEBUG("device created");
 
   for (int i = 0; i < create_info.queue_requests.size(); i++) {
     uint32_t family = queue_family_indices[i];

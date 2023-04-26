@@ -8,6 +8,7 @@
 #include <iostream>
 #include <memory>
 #include "logs.hpp"
+#include "vk/command_pool.hpp"
 
 using namespace std;
 

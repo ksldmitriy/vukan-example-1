@@ -1,4 +1,6 @@
 #include "application.hpp"
+#include <memory>
+#include <vulkan/vulkan_core.h>
 
 void Application::Run() {
   window = unique_ptr<Window>(new Window());
@@ -21,7 +23,8 @@ void Application::InitVulkan() {
   DEBUG("vulkan inited");
 }
 
-void Application::Prepare() {}
+void Application::Prepare() {
+}
 
 void Application::CreateInstance() {
   vk::InstanceCreateInfo create_info;

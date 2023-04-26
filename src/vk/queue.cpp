@@ -11,4 +11,6 @@ Queue::Queue(VkQueue handle, uint32_t family) {
 
 VkQueue Queue::GetHandle() { return handle; }
 
+uint32_t Queue::GetFamily() { return family; }
+
 } // namespace vk
