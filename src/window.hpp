@@ -26,4 +26,6 @@ public:
   VkSurfaceKHR GetSurface();
   void GetInstanceExtensions(const char **&extensions,
                              uint32_t &extensions_count);
+
+  bool ShouldClose();  
 };

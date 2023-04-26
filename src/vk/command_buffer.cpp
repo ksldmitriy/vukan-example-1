@@ -6,7 +6,7 @@
 
 namespace vk {
 
-  CommandBuffer::CommandBuffer(CommandPool &pool, CommandBufferLevel level) {
+CommandBuffer::CommandBuffer(CommandPool &pool, CommandBufferLevel level) {
   this->pool = &pool;
 
   VkCommandBufferAllocateInfo allocate_info =
@@ -23,6 +23,28 @@ namespace vk {
 }
 
 CommandBuffer::~CommandBuffer() { Dispose(); }
+
+VkCommandBuffer CommandBuffer::GetHandle() { return handle; }
+
+void CommandBuffer::Begin() {
+  VkCommandBufferBeginInfo begin_info = vk::command_buffer_begin_info_template;
+
+  VkResult result = vkBeginCommandBuffer(handle, &begin_info);
+  if (result) {
+    throw CriticalException("cant begin command buffer");
+  }
+
+  TRACE("command buffer begun");
+}
+
+void CommandBuffer::End() {
+  VkResult result = vkEndCommandBuffer(handle);
+  if (result) {
+    throw CriticalException("cant end command buffer");
+  }
+
+  TRACE("command buffer ended");
+}
 
 void CommandBuffer::Dispose() {
   if (handle == VK_NULL_HANDLE) {

@@ -11,6 +11,8 @@ void Application::Run() {
       new vk::Swapchain(*device, window->GetSurface()));
 
   Prepare();
+
+  RenderLoop();
 }
 
 void Application::InitVulkan() {
@@ -25,6 +27,95 @@ void Application::Prepare() {
   CreateRenderPass();
   InitFramebuffers();
   CreateGraphicsPipeline();
+  CreateSyncObjects();
+  CreateCommandBuffer();
+}
+
+void Application::RenderLoop() {
+
+  while (!window->ShouldClose()) {
+    Draw();
+  }
+}
+
+void Application::Draw() {}
+
+void Application::CreateCommandBuffer() {
+  command_pool = make_unique<vk::CommandPool>(*device, graphics_queue,
+                                              framebuffers.size());
+
+  command_buffers.resize(framebuffers.size());
+
+  for (int i = 0; i < framebuffers.size(); i++) {
+    unique_ptr<vk::CommandBuffer> command_buffer =
+        command_pool->AllocateCommandBuffer(vk::CommandBufferLevel::primary);
+
+    command_buffer->Begin();
+
+    VkClearValue clear_value = {{{0, 0, 0, 1}}};
+
+    VkRenderPassBeginInfo render_pass_begin_info =
+        vk::render_pass_begin_info_template;
+    render_pass_begin_info.renderPass = render_pass;
+    render_pass_begin_info.framebuffer = framebuffers[i];
+    render_pass_begin_info.renderArea.offset = {0, 0};
+    render_pass_begin_info.renderArea.extent = swapchain->GetExtent();
+    render_pass_begin_info.clearValueCount = 1;
+    render_pass_begin_info.pClearValues = &clear_value;
+
+    vkCmdBeginRenderPass(command_buffer->GetHandle(), &render_pass_begin_info,
+                         VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdBindPipeline(command_buffer->GetHandle(),
+                      VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+    vkCmdDraw(command_buffer->GetHandle(), 3, 1, 0, 0);
+
+    vkCmdEndRenderPass(command_buffer->GetHandle());
+
+    command_buffer->End();
+
+    command_buffers[i] = move(command_buffer);
+  }
+
+  TRACE("render command buffers created");
+}
+
+void Application::CreateSyncObjects() {
+  VkSemaphoreCreateInfo semphore_create_info =
+      vk::semaphore_create_info_template;
+
+  VkFenceCreateInfo fence_create_info = vk::fence_create_info_template;
+
+  image_available_semaphores.resize(framebuffers.size());
+  render_finished_semaphores.resize(framebuffers.size());
+  fences.resize(framebuffers.size());
+
+  VkResult result;
+
+  for (int i = 0; i < framebuffers.size(); i++) {
+    result = vkCreateSemaphore(device->GetHandle(), &semphore_create_info,
+                               nullptr, &image_available_semaphores[i]);
+    if (result) {
+      throw vk::CriticalException("cant create image available semaphore");
+    }
+
+    result = vkCreateSemaphore(device->GetHandle(), &semphore_create_info,
+                               nullptr, &render_finished_semaphores[i]);
+    if (result) {
+      throw vk::CriticalException("cant create render fished semaphore");
+    }
+
+    result = vkCreateFence(device->GetHandle(), &fence_create_info, nullptr,
+                           &fences[i]);
+    if (result) {
+      throw vk::CriticalException("cant create fence");
+    }
+  }
+
+  TRACE("image available semaphores created");
+  TRACE("render finished semaphores created");
+  TRACE("fences created");
 }
 
 void Application::CreateGraphicsPipeline() {
@@ -117,10 +208,11 @@ void Application::CreateGraphicsPipeline() {
 
   TRACE("pipeline layout created");
 
-  VkPipelineDynamicStateCreateInfo dynamic_state = vk::pipeline_dynamic_state_create_info_template;
+  VkPipelineDynamicStateCreateInfo dynamic_state =
+      vk::pipeline_dynamic_state_create_info_template;
   dynamic_state.dynamicStateCount = 0;
   dynamic_state.pDynamicStates = nullptr;
-  
+
   VkGraphicsPipelineCreateInfo pipeline_create_info =
       vk::graphics_pipeline_create_info_template;
   pipeline_create_info.stageCount = 2;
@@ -139,9 +231,10 @@ void Application::CreateGraphicsPipeline() {
   pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
   pipeline_create_info.basePipelineIndex = -1;
 
-  result = vkCreateGraphicsPipelines(device->GetHandle(), VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &pipeline);
-  if(result){
-	throw vk::CriticalException("cant create pipeline");
+  result = vkCreateGraphicsPipelines(device->GetHandle(), VK_NULL_HANDLE, 1,
+                                     &pipeline_create_info, nullptr, &pipeline);
+  if (result) {
+    throw vk::CriticalException("cant create pipeline");
   }
 
   DEBUG("graphics pipeline created");

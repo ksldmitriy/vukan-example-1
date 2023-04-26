@@ -1,7 +1,7 @@
 #include "window.hpp"
+#include "logs.hpp"
 #include "vk/exception.hpp"
 #include "vk/instance.hpp"
-#include "logs.hpp"
 
 bool Window::glfw_inited = false;
 
@@ -14,12 +14,14 @@ Window::Window() {
 
   window = glfwCreateWindow(900, 900, "title", 0, 0);
   if (!window) {
-	cout << "cant create window" << endl;
+    cout << "cant create window" << endl;
     throw -1;
   }
 
   DEBUG("window created");
 }
+
+bool Window::ShouldClose() { return glfwWindowShouldClose(window); }
 
 void Window::CreateSurface(vk::Instance *instance) {
   VkResult result =

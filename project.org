@@ -1,11 +1,27 @@
 * Realistic tasks
 
 ** Current tasks
+*** Semaphore and fence
+- [X] Create semaphore for application
+- [X] Create fence for application
+- [ ] Maybe create semaphore class
+- [ ] Maybe create semaphore class
+
+*** Window 
+- [X] Create window class
+- [X] Window error handling
+- [X] Create swapchain class
+  - [X] Get swapchain from window
+- [ ] Poll events
+
+
 *** Pipeline
 - [X] Dump graphics pipeline implementation
 - [ ] Graphics pipeline class 
 
 ** Commit logs
+- Semaphores and fence created
+- Command buffer begin and end methods added
 
 ** Archive
 *** Init vulkan
@@ -23,14 +39,10 @@
 - [X] Exceptions
 - [X] Critical exception
 
-  
-*** Window and Swapchain creation
-- [X] Create window class
-- [X] Window error handling
-- [X] Create swapchain class
-  - [X] Get swapchain from window
+     
+*** Swapchain 
 
-    
+
 *** Commands
 - [X] Create command pool class
 - [X] Create command buffer class

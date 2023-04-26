@@ -14,6 +14,7 @@ private:
   VkSwapchainKHR handle;
   VkSurfaceFormatKHR format;
   VkExtent2D extent;
+  Device* device;
   vector<VkImage> images;
   vector<VkImageView> image_views;
 
@@ -38,6 +39,7 @@ public:
   Swapchain(Swapchain &) = delete;
   Swapchain &operator=(Swapchain &) = delete;
 
+  uint32_t AcquireNextImage();
   VkSurfaceFormatKHR GetFormat();
   VkExtent2D GetExtent();
   const vector<VkImage>& GetImages();

@@ -5,6 +5,8 @@
 namespace vk {
 
 Swapchain::Swapchain(Device &device, VkSurfaceKHR surface) {
+  this->device = &device;
+
   vk::PhysicalDevice &physical_device = device.GetPhysicalDevice();
 
   // get capabilities
@@ -39,6 +41,12 @@ Swapchain::Swapchain(Device &device, VkSurfaceKHR surface) {
 
   CreateImageViews(device);
 }
+
+  uint32_t Swapchain::AcquireNextImage(){
+	uint32_t next_image;
+	VkReult result = vkAcquireNextImageKHR(device->GetHandle();
+	
+  }
 
 const vector<VkImage> &Swapchain::GetImages() { return images; }
 

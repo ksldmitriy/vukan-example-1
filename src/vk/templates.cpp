@@ -97,6 +97,9 @@ VkSemaphoreCreateInfo semaphore_create_info_template = {
     .pNext = nullptr,
     .flags = 0};
 
+VkFenceCreateInfo fence_create_info_template = {
+    .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, .pNext = nullptr, .flags = 0};
+
 VkSwapchainCreateInfoKHR swapchain_create_info_template = {
     .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
     .pNext = nullptr,

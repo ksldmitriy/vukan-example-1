@@ -10,13 +10,20 @@
 #include "logs.hpp"
 #include "vk/command_pool.hpp"
 #include "vk/shader_module.hpp"
+#include "vk/command_pool.hpp"
+#include "vk/command_buffer.hpp"
 
 using namespace std;
 
 class Application {
 private:
+  const int frames_in_flight = 2;
+
   unique_ptr<vk::Instance> instance;
   unique_ptr<vk::Device> device;
+
+  vector<VkSemaphore> image_available_semaphores, render_finished_semaphores;
+  vector<VkFence> fences;
 
   unique_ptr<Window> window;
 
@@ -31,13 +38,20 @@ private:
   VkPipeline pipeline;
   
   vector<VkFramebuffer> framebuffers;
+
+  unique_ptr<vk::CommandPool> command_pool;
+  vector<unique_ptr<vk::CommandBuffer>> command_buffers;
   
   void InitVulkan();
   void Prepare();
+  void RenderLoop();
+  void Draw();
 
   void CreateRenderPass();
   void InitFramebuffers();
   void CreateGraphicsPipeline();
+  void CreateSyncObjects();
+  void CreateCommandBuffer();
   
   void CreateInstance();
   void CreateDevice();

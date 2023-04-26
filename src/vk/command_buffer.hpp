@@ -25,6 +25,10 @@ public:
   CommandBuffer(CommandBuffer &) = delete;
   CommandBuffer &operator=(CommandBuffer &) = delete;
   ~CommandBuffer();
+
+  VkCommandBuffer GetHandle();
+  void Begin();
+  void End();
   void Dispose();
 
   friend class CommandPool;
