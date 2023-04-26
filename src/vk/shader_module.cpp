@@ -26,6 +26,8 @@ ShaderModule::~ShaderModule() {
   TRACE("shader module destoyed");
 }
 
+VkShaderModule ShaderModule::GetHandle() { return handle; }
+
 vector<char> ShaderModule::ReadFile(fs::path filepath) {
   ifstream file(filepath, ios::binary);
 

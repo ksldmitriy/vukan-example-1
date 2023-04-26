@@ -1,6 +1,9 @@
 * Realistic tasks
 
 ** Current tasks
+*** Pipeline
+- [X] Dump graphics pipeline implementation
+- [ ] Graphics pipeline class 
 
 ** Commit logs
 
@@ -36,23 +39,30 @@
 
 *** Render pass
 - [X] Create dump render pass
+
   
 *** Framebuffers
 - [X] Init framebuffers
 
- *** Shader module
+  
+*** Shader module
 - [X] Create shader module class
 - [X] Read shader from file
 - [X] Load shader to vulkan
- 
+
+  
 * Far future tasks
 ** [ ] If this is checked, you are really cool
   - [ ] Choose physical device
   - [ ] Swapchain
     - [ ] Choose: format, present mode, transform and extend
-  - [ ] create several queues of same family if possible
+  - [ ] Create several queues of same family if possible
+  - [ ] Pipeline dynamic state
+
     
 ** Ideas
-- Maybe create render pass class
+- Maybe create render pass class (pobably not)
+- Create barrier class
+- Lear more about pipeline rasterization state
 
 

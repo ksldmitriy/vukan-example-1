@@ -26,6 +26,10 @@ private:
 
   VkRenderPass render_pass;
 
+  VkPipelineLayout pipeline_layout;
+
+  VkPipeline pipeline;
+  
   vector<VkFramebuffer> framebuffers;
   
   void InitVulkan();

@@ -65,7 +65,7 @@ VkPipelineShaderStageCreateInfo pipeline_shader_stage_create_info_template = {
     .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
     .pNext = nullptr,
     .flags = 0,
-};
+    .pSpecializationInfo = nullptr};
 
 VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info_template = {
     .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
@@ -152,22 +152,28 @@ VkPipelineInputAssemblyStateCreateInfo
     pipeline_input_assembly_create_info_template = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
         .pNext = nullptr,
-        .flags = 0};
+        .flags = 0,
+        .primitiveRestartEnable = false};
 
-VkPipelineViewportStateCreateInfo pipeline_viewport_create_info_template{
+VkPipelineViewportStateCreateInfo pipeline_viewport_state_create_info_template{
     .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
     .pNext = nullptr,
-    .flags = 0};
+    .flags = 0,
+    .viewportCount = 1,
+    .scissorCount = 1};
 
 VkPipelineRasterizationStateCreateInfo
     pipeline_rasterization_state_create_info_template = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
+        .rasterizerDiscardEnable = VK_FALSE,
+        .cullMode = VK_CULL_MODE_NONE,
         .depthBiasEnable = VK_FALSE,
         .depthBiasConstantFactor = 0,
         .depthBiasClamp = 0,
-        .depthBiasSlopeFactor = 0};
+        .depthBiasSlopeFactor = 0,
+        .lineWidth = 1};
 
 VkPipelineMultisampleStateCreateInfo
     pipeline_multisample_state_create_info_template = {
@@ -177,8 +183,14 @@ VkPipelineMultisampleStateCreateInfo
         .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
         .sampleShadingEnable = VK_FALSE,
         .minSampleShading = 1,
+        .pSampleMask = nullptr,
         .alphaToCoverageEnable = VK_FALSE,
         .alphaToOneEnable = VK_FALSE};
+
+VkPipelineDynamicStateCreateInfo pipeline_dynamic_state_create_info_template = {
+    .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+    .pNext = nullptr,
+    .flags = 0};
 
 VkPipelineColorBlendStateCreateInfo
     pipeline_color_blend_state_create_info_template = {

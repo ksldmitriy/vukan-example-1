@@ -30,8 +30,121 @@ void Application::Prepare() {
 void Application::CreateGraphicsPipeline() {
   unique_ptr<vk::ShaderModule> vertex_shader =
       make_unique<vk::ShaderModule>(*device, "shaders/vert.spv");
-  unique_ptr<vk::ShaderModule> frag_shader =
+  unique_ptr<vk::ShaderModule> fragment_shader =
       make_unique<vk::ShaderModule>(*device, "shaders/frag.spv");
+
+  VkPipelineShaderStageCreateInfo vertex_shader_stage_create_info =
+      vk::pipeline_shader_stage_create_info_template;
+  vertex_shader_stage_create_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
+  vertex_shader_stage_create_info.module = vertex_shader->GetHandle();
+  vertex_shader_stage_create_info.pName = "main";
+
+  VkPipelineShaderStageCreateInfo fragment_shader_stage_create_info =
+      vk::pipeline_shader_stage_create_info_template;
+  fragment_shader_stage_create_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+  fragment_shader_stage_create_info.module = fragment_shader->GetHandle();
+  fragment_shader_stage_create_info.pName = "main";
+
+  VkPipelineShaderStageCreateInfo shader_stages[2] = {
+      vertex_shader_stage_create_info, fragment_shader_stage_create_info};
+
+  VkPipelineVertexInputStateCreateInfo vertex_input =
+      vk::vertex_input_create_info_template;
+  vertex_input.vertexBindingDescriptionCount = 0;
+  vertex_input.pVertexBindingDescriptions = nullptr;
+  vertex_input.vertexAttributeDescriptionCount = 0;
+  vertex_input.pVertexAttributeDescriptions = 0;
+
+  VkPipelineInputAssemblyStateCreateInfo input_assembly_create_info =
+      vk::pipeline_input_assembly_create_info_template;
+  input_assembly_create_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+  VkViewport viewport;
+  viewport.x = 0;
+  viewport.y = 0;
+  viewport.width = swapchain->GetExtent().width;
+  viewport.height = swapchain->GetExtent().height;
+  viewport.minDepth = 0;
+  viewport.maxDepth = 1;
+
+  VkRect2D scissor;
+  scissor.offset = {0, 0};
+  scissor.extent = swapchain->GetExtent();
+
+  VkPipelineViewportStateCreateInfo viewport_state_create_info =
+      vk::pipeline_viewport_state_create_info_template;
+  viewport_state_create_info.pViewports = &viewport;
+  viewport_state_create_info.pScissors = &scissor;
+
+  VkPipelineRasterizationStateCreateInfo rasterization_state_create_info =
+      vk::pipeline_rasterization_state_create_info_template;
+  rasterization_state_create_info.polygonMode = VK_POLYGON_MODE_FILL;
+
+  VkPipelineMultisampleStateCreateInfo multisample_create_info =
+      vk::pipeline_multisample_state_create_info_template;
+
+  VkPipelineColorBlendAttachmentState color_blend_attachment;
+  color_blend_attachment.colorWriteMask =
+      VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+      VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+  color_blend_attachment.blendEnable = VK_FALSE;
+  color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+  color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+  color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
+  color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+  color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+  color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
+
+  VkPipelineColorBlendStateCreateInfo color_blend_state_create_info =
+      vk::pipeline_color_blend_state_create_info_template;
+  color_blend_state_create_info.logicOpEnable = VK_FALSE;
+  color_blend_state_create_info.attachmentCount = 1;
+  color_blend_state_create_info.pAttachments = &color_blend_attachment;
+
+  VkPipelineLayoutCreateInfo pipeline_layout_create_info =
+      vk::pipeline_layout_create_info_template;
+  pipeline_layout_create_info.setLayoutCount = 0;
+  pipeline_layout_create_info.pSetLayouts = nullptr;
+  pipeline_layout_create_info.pushConstantRangeCount = 0;
+  pipeline_layout_create_info.pPushConstantRanges = nullptr;
+
+  VkResult result =
+      vkCreatePipelineLayout(device->GetHandle(), &pipeline_layout_create_info,
+                             nullptr, &pipeline_layout);
+  if (result) {
+    throw vk::CriticalException("cant create pipeline layout");
+  }
+
+  TRACE("pipeline layout created");
+
+  VkPipelineDynamicStateCreateInfo dynamic_state = vk::pipeline_dynamic_state_create_info_template;
+  dynamic_state.dynamicStateCount = 0;
+  dynamic_state.pDynamicStates = nullptr;
+  
+  VkGraphicsPipelineCreateInfo pipeline_create_info =
+      vk::graphics_pipeline_create_info_template;
+  pipeline_create_info.stageCount = 2;
+  pipeline_create_info.pStages = shader_stages;
+  pipeline_create_info.pVertexInputState = &vertex_input;
+  pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
+  pipeline_create_info.pViewportState = &viewport_state_create_info;
+  pipeline_create_info.pRasterizationState = &rasterization_state_create_info;
+  pipeline_create_info.pMultisampleState = &multisample_create_info;
+  pipeline_create_info.pDepthStencilState = nullptr;
+  pipeline_create_info.pColorBlendState = &color_blend_state_create_info;
+  pipeline_create_info.pDynamicState = &dynamic_state;
+  pipeline_create_info.layout = pipeline_layout;
+  pipeline_create_info.renderPass = render_pass;
+  pipeline_create_info.subpass = 0;
+  pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
+  pipeline_create_info.basePipelineIndex = -1;
+
+  result = vkCreateGraphicsPipelines(device->GetHandle(), VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &pipeline);
+  if(result){
+	throw vk::CriticalException("cant create pipeline");
+  }
+
+  DEBUG("graphics pipeline created");
 }
 
 void Application::InitFramebuffers() {
