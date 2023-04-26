@@ -28,7 +28,7 @@ void Window::CreateSurface(vk::Instance *instance) {
     throw CriticalException("cant create window surface");
   }
 
-  DEBUG("surace created");
+  DEBUG("surface created");
 }
 
 void Window::GetInstanceExtensions(const char **&extensions,

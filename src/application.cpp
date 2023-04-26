@@ -23,12 +23,63 @@ void Application::InitVulkan() {
   DEBUG("vulkan inited");
 }
 
-void Application::Prepare() { CreateRenderPass(); }
+void Application::Prepare() {
+  CreateRenderPass();
+  InitFramebuffers();
+}
+
+void Application::InitFramebuffers() {
+  VkFramebufferCreateInfo create_info = vk::framebuffer_create_info_template;
+  create_info.renderPass = render_pass;
+  create_info.attachmentCount = 1;
+  create_info.width = swapchain->GetExtent().width;
+  create_info.height = swapchain->GetExtent().height;
+  create_info.layers = 1;
+
+  const vector<VkImageView> image_views = swapchain->GetImageViews();
+  framebuffers.resize(image_views.size());
+
+  for (int i = 0; i < framebuffers.size(); i++) {
+    create_info.pAttachments = &image_views[i];
+    VkResult result = vkCreateFramebuffer(device->GetHandle(), &create_info,
+                                          nullptr, &framebuffers[i]);
+    if (result) {
+      throw vk::CriticalException("cant create framebuffer");
+    }
+  }
+}
 
 void Application::CreateRenderPass() {
-  VkAttachmentDescription color_attachment;
-  color_attachment.flags = 0;
+  VkAttachmentDescription color_attachment =
+      vk::attachment_description_template;
   color_attachment.format = swapchain->GetFormat().format;
+  color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+  color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+  VkAttachmentReference color_attachment_reference;
+  color_attachment_reference.attachment = 0;
+  color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+  VkSubpassDescription subpass_description = vk::subpass_description_template;
+  subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+  subpass_description.colorAttachmentCount = 1;
+  subpass_description.pColorAttachments = &color_attachment_reference;
+
+  VkRenderPassCreateInfo create_info = vk::render_pass_create_info_template;
+  create_info.attachmentCount = 1;
+  create_info.pAttachments = &color_attachment;
+  create_info.subpassCount = 1;
+  create_info.pSubpasses = &subpass_description;
+
+  VkResult result = vkCreateRenderPass(device->GetHandle(), &create_info,
+                                       nullptr, &render_pass);
+  if (result) {
+    throw vk::CriticalException("cant create render pass");
+  }
+
+  DEBUG("render pass created");
 }
 
 void Application::CreateInstance() {

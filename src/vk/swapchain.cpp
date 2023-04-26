@@ -35,7 +35,41 @@ Swapchain::Swapchain(Device &device, VkSurfaceKHR surface) {
   DEBUG("swapchain created");
 
   // get images
-  GetImages(device);
+  GetImagesFromDevice(device);
+
+  CreateImageViews(device);
+}
+
+const vector<VkImage> &Swapchain::GetImages() { return images; }
+
+const vector<VkImageView> &Swapchain::GetImageViews() { return image_views; }
+
+VkSurfaceFormatKHR Swapchain::GetFormat() { return format; }
+
+VkExtent2D Swapchain::GetExtent() { return extent; }
+
+void Swapchain::CreateImageViews(Device &device) {
+  image_views.resize(images.size());
+
+  VkImageViewCreateInfo create_info = image_view_create_info_template;
+  create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  create_info.format = format.format;
+  create_info.components.r = create_info.components.g =
+      create_info.components.b = create_info.components.a =
+          VK_COMPONENT_SWIZZLE_IDENTITY;
+  create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  create_info.subresourceRange.baseMipLevel = 0;
+  create_info.subresourceRange.levelCount = 1;
+  create_info.subresourceRange.baseArrayLayer = 0;
+  create_info.subresourceRange.layerCount = 1;
+
+  for (int i = 0; i < image_views.size(); i++) {
+    create_info.image = images[i];
+    VkResult result = vkCreateImageView(device.GetHandle(), &create_info,
+                                        nullptr, &image_views[i]);
+  }
+
+  TRACE("swapchain image views created");
 }
 
 void Swapchain::GenerateCreateInfo(PhysicalDevice &physical_device,
@@ -67,7 +101,7 @@ void Swapchain::GenerateCreateInfo(PhysicalDevice &physical_device,
   create_info.oldSwapchain = nullptr;
 }
 
-void Swapchain::GetImages(Device &device) {
+void Swapchain::GetImagesFromDevice(Device &device) {
   VkResult result;
 
   uint32_t images_count = 0;
@@ -80,15 +114,14 @@ void Swapchain::GetImages(Device &device) {
   }
 
   TRACE("swapchain images count is {}", images_count);
-  return images.resize(images_count);
+
+  images.resize(images_count);
   result = vkGetSwapchainImagesKHR(device.GetHandle(), handle, &images_count,
                                    images.data());
   if (result) {
     throw CriticalException("cant get swapchain images");
   }
 }
-
-VkSurfaceFormatKHR Swapchain::GetFormat() { return format; }
 
 uint32_t
 Swapchain::ChooseSwapchainImagesCount(VkSurfaceCapabilitiesKHR &capabilities) {

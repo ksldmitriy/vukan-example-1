@@ -23,10 +23,15 @@ private:
 
   vk::Queue graphics_queue;
 
+  VkRenderPass render_pass;
+
+  vector<VkFramebuffer> framebuffers;
+  
   void InitVulkan();
   void Prepare();
 
   void CreateRenderPass();
+  void InitFramebuffers();
   
   void CreateInstance();
   void CreateDevice();

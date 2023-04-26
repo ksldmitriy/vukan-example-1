@@ -110,7 +110,7 @@ VkRenderPassCreateInfo render_pass_create_info_template = {
     .pNext = nullptr,
     .flags = 0};
 
-VkAttachmentDescription attachment_descriptor_template = {
+VkAttachmentDescription attachment_description_template = {
     .flags = 0,
     .samples = VK_SAMPLE_COUNT_1_BIT,
     .loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,

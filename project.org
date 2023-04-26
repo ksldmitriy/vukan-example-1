@@ -2,10 +2,12 @@
 
 ** Current tasks
 *** Render pass
-- [ ] Create dump render pass
+- [X] Create dump render pass
+  
+*** Framebuffers
+- [X] Init framebuffers
 
 ** Commit logs
-- swapchain create diveded into several funtions
 
 ** Archive
 *** Init vulkan
@@ -45,3 +47,6 @@
   - [ ] create several queues of same family if possible
     
 ** Ideas
+- Maybe create render pass class
+
+

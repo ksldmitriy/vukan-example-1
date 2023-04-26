@@ -15,13 +15,15 @@ private:
   VkSurfaceFormatKHR format;
   VkExtent2D extent;
   vector<VkImage> images;
+  vector<VkImageView> image_views;
 
   void GenerateCreateInfo(PhysicalDevice &physical_device,
                           VkSwapchainCreateInfoKHR &create_info,
                           VkSurfaceKHR surface, uint32_t desired_images_count,
                           VkSurfaceCapabilitiesKHR capabilities);
-  void GetImages(Device &device);
-
+  void GetImagesFromDevice(Device &device);
+  void CreateImageViews(Device& device);
+  
   uint32_t ChooseSwapchainImagesCount(VkSurfaceCapabilitiesKHR &capabilities);
   void ChooseSurfaceFormat(vector<VkSurfaceFormatKHR> &supported_formats);
   VkPresentModeKHR
@@ -37,6 +39,9 @@ public:
   Swapchain &operator=(Swapchain &) = delete;
 
   VkSurfaceFormatKHR GetFormat();
+  VkExtent2D GetExtent();
+  const vector<VkImage>& GetImages();
+  const vector<VkImageView>& GetImageViews();
 };
 
 } // namespace vk
