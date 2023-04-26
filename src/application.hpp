@@ -26,6 +26,8 @@ private:
   void InitVulkan();
   void Prepare();
 
+  void CreateRenderPass();
+  
   void CreateInstance();
   void CreateDevice();
 

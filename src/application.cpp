@@ -10,7 +10,7 @@ void Application::Run() {
   window->CreateSurface(instance.get());
 
   swapchain = unique_ptr<vk::Swapchain>(
-      new vk::Swapchain(device.get(), window->GetSurface()));
+      new vk::Swapchain(*device, window->GetSurface()));
 
   Prepare();
 }
@@ -23,7 +23,12 @@ void Application::InitVulkan() {
   DEBUG("vulkan inited");
 }
 
-void Application::Prepare() {
+void Application::Prepare() { CreateRenderPass(); }
+
+void Application::CreateRenderPass() {
+  VkAttachmentDescription color_attachment;
+  color_attachment.flags = 0;
+  color_attachment.format = swapchain->GetFormat().format;
 }
 
 void Application::CreateInstance() {
