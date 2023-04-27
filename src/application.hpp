@@ -46,6 +46,8 @@ private:
   void Prepare();
   void RenderLoop();
   void Draw();
+  void Render(uint32_t next_image_index);
+  void Present(uint32_t next_image_index);
 
   void CreateRenderPass();
   void InitFramebuffers();

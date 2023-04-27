@@ -38,13 +38,18 @@ void Application::RenderLoop() {
 }
 
 void Application::Draw() {
-  vkWaitForFences(device->GetHandle(), 1 ,&fence, VK_TRUE, UINT64_MAX);
-  vkResetFences(device->GetHandle(), 1, &fence);
-  INFO("f");
-  
   uint32_t next_image_index =
       swapchain->AcquireNextImage(image_available_semaphore);
 
+  Render(next_image_index);
+
+  Present(next_image_index);
+
+  vkWaitForFences(device->GetHandle(), 1, &fence, VK_TRUE, UINT64_MAX);
+  vkResetFences(device->GetHandle(), 1, &fence);
+}
+
+void Application::Render(uint32_t next_image_index) {
   VkCommandBuffer command_buffer_handle =
       command_buffers[next_image_index]->GetHandle();
 
@@ -64,7 +69,9 @@ void Application::Draw() {
   if (result) {
     throw vk::CriticalException("cant submit to queue");
   }
+}
 
+void Application::Present(uint32_t next_image_index) {
   VkSwapchainKHR swapchain_handle = swapchain->GetHandle();
 
   VkPresentInfoKHR present_info = vk::present_info_template;
@@ -74,7 +81,8 @@ void Application::Draw() {
   present_info.pSwapchains = &swapchain_handle;
   present_info.pImageIndices = &next_image_index;
 
-  result = vkQueuePresentKHR(graphics_queue.GetHandle(), &present_info);
+  VkResult result =
+      vkQueuePresentKHR(graphics_queue.GetHandle(), &present_info);
   if (result) {
     throw vk::CriticalException("cant present");
   }

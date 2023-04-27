@@ -165,11 +165,11 @@ VkPresentModeKHR Swapchain::ChoosePresentMode(
     vector<VkPresentModeKHR> &supported_present_modes) {
   if (find(supported_present_modes.begin(), supported_present_modes.end(),
            VK_PRESENT_MODE_FIFO_KHR) != supported_present_modes.end()) {
-    TRACE("present mode is immediate");
-    return VK_PRESENT_MODE_IMMEDIATE_KHR;
+    TRACE("present mode is fifo");
+    return VK_PRESENT_MODE_FIFO_KHR;
   }
 
-  TRACE("present mode is not immediate");
+  TRACE("present mode is not fifo");
   return supported_present_modes[0];
 }
 
