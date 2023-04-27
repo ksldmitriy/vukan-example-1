@@ -4,6 +4,7 @@
 #include "vk/instance.hpp"
 
 bool Window::glfw_inited = false;
+map<GLFWwindow *, Window *> Window::windows_db;
 
 Window::Window() {
   if (!glfw_inited) {
@@ -12,20 +13,50 @@ Window::Window() {
 
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-  window = glfwCreateWindow(900, 900, "title", 0, 0);
-  if (!window) {
-    cout << "cant create window" << endl;
-    throw -1;
+  handle = glfwCreateWindow(900, 900, "title", 0, 0);
+  if (!handle) {
+    throw CriticalException("cant create window");
   }
+
+  glfwSetKeyCallback(handle, StaticKeyCallback);
+
+  windows_db[handle] = this;
 
   DEBUG("window created");
 }
 
-bool Window::ShouldClose() { return glfwWindowShouldClose(window); }
+Window::~Window() {
+  windows_db.erase(handle);
+
+  glfwDestroyWindow(handle);
+
+  DEBUG("window destroyed");
+}
+
+void Window::StaticKeyCallback(GLFWwindow *window, int key, int scancode,
+                               int action, int mods) {
+  if (!windows_db.contains(window)) {
+    INFO("no window for key callback");
+    return;
+  }
+
+  windows_db[window]->KeyCallback(key, scancode, action, mods);
+}
+
+void Window::KeyCallback(int key, int scancode, int action, int mods) {
+  if (key== GLFW_KEY_ESCAPE) {
+	glfwSetWindowShouldClose(handle, GLFW_TRUE);
+    return;
+  }
+}
+
+void Window::PollEvents() { glfwPollEvents(); }
+
+bool Window::ShouldClose() { return glfwWindowShouldClose(handle); }
 
 void Window::CreateSurface(vk::Instance *instance) {
   VkResult result =
-      glfwCreateWindowSurface(instance->GetHandle(), window, nullptr, &surface);
+      glfwCreateWindowSurface(instance->GetHandle(), handle, nullptr, &surface);
   if (result) {
     throw CriticalException("cant create window surface");
   }

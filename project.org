@@ -13,8 +13,9 @@
 - [X] Window error handling
 - [X] Create swapchain class
   - [X] Get swapchain from window
-- [ ] Poll events
-
+- [X] Poll events
+  - [X] Exit on ESC
+- [X] Normal destructor
 
 *** Pipeline
 - [X] Dump graphics pipeline implementation

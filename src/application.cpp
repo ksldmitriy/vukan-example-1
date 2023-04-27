@@ -34,6 +34,8 @@ void Application::Prepare() {
 void Application::RenderLoop() {
   while (!window->ShouldClose()) {
     Draw();
+
+	window->PollEvents();
   }
 }
 
@@ -134,7 +136,6 @@ void Application::CreateSyncObjects() {
       vk::semaphore_create_info_template;
 
   VkFenceCreateInfo fence_create_info = vk::fence_create_info_template;
-  fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
   VkResult result;
 
