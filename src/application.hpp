@@ -22,8 +22,8 @@ private:
   unique_ptr<vk::Instance> instance;
   unique_ptr<vk::Device> device;
 
-  vector<VkSemaphore> image_available_semaphores, render_finished_semaphores;
-  vector<VkFence> fences;
+  VkSemaphore image_available_semaphore, render_finished_semaphore;
+  VkFence fence;
 
   unique_ptr<Window> window;
 

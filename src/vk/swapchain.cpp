@@ -42,11 +42,20 @@ Swapchain::Swapchain(Device &device, VkSurfaceKHR surface) {
   CreateImageViews(device);
 }
 
-  uint32_t Swapchain::AcquireNextImage(){
-	uint32_t next_image;
-	VkReult result = vkAcquireNextImageKHR(device->GetHandle();
-	
+VkSwapchainKHR Swapchain::GetHandle() { return handle; }
+
+uint32_t Swapchain::AcquireNextImage(VkSemaphore semaphore) {
+  uint32_t next_image;
+
+  VkResult result =
+      vkAcquireNextImageKHR(device->GetHandle(), handle, UINT64_MAX, semaphore,
+                            VK_NULL_HANDLE, &next_image);
+  if (result) {
+    throw CriticalException("cant acquire next image");
   }
+
+  return next_image;
+}
 
 const vector<VkImage> &Swapchain::GetImages() { return images; }
 
@@ -154,6 +163,13 @@ VkSurfaceTransformFlagBitsKHR Swapchain::ChooseSurfaceTransform(
 
 VkPresentModeKHR Swapchain::ChoosePresentMode(
     vector<VkPresentModeKHR> &supported_present_modes) {
+  if (find(supported_present_modes.begin(), supported_present_modes.end(),
+           VK_PRESENT_MODE_FIFO_KHR) != supported_present_modes.end()) {
+    TRACE("present mode is immediate");
+    return VK_PRESENT_MODE_IMMEDIATE_KHR;
+  }
+
+  TRACE("present mode is not immediate");
   return supported_present_modes[0];
 }
 

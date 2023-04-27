@@ -32,13 +32,53 @@ void Application::Prepare() {
 }
 
 void Application::RenderLoop() {
-
   while (!window->ShouldClose()) {
     Draw();
   }
 }
 
-void Application::Draw() {}
+void Application::Draw() {
+  vkWaitForFences(device->GetHandle(), 1 ,&fence, VK_TRUE, UINT64_MAX);
+  vkResetFences(device->GetHandle(), 1, &fence);
+  INFO("f");
+  
+  uint32_t next_image_index =
+      swapchain->AcquireNextImage(image_available_semaphore);
+
+  VkCommandBuffer command_buffer_handle =
+      command_buffers[next_image_index]->GetHandle();
+
+  VkPipelineStageFlags wait_dst_stage_mask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+
+  VkSubmitInfo submit_info = vk::submit_info_template;
+  submit_info.commandBufferCount = 1;
+  submit_info.pCommandBuffers = &command_buffer_handle;
+  submit_info.waitSemaphoreCount = 1;
+  submit_info.pWaitSemaphores = &image_available_semaphore;
+  submit_info.pWaitDstStageMask = &wait_dst_stage_mask;
+  submit_info.signalSemaphoreCount = 1;
+  submit_info.pSignalSemaphores = &render_finished_semaphore;
+
+  VkResult result =
+      vkQueueSubmit(graphics_queue.GetHandle(), 1, &submit_info, fence);
+  if (result) {
+    throw vk::CriticalException("cant submit to queue");
+  }
+
+  VkSwapchainKHR swapchain_handle = swapchain->GetHandle();
+
+  VkPresentInfoKHR present_info = vk::present_info_template;
+  present_info.waitSemaphoreCount = 1;
+  present_info.pWaitSemaphores = &render_finished_semaphore;
+  present_info.swapchainCount = 1;
+  present_info.pSwapchains = &swapchain_handle;
+  present_info.pImageIndices = &next_image_index;
+
+  result = vkQueuePresentKHR(graphics_queue.GetHandle(), &present_info);
+  if (result) {
+    throw vk::CriticalException("cant present");
+  }
+}
 
 void Application::CreateCommandBuffer() {
   command_pool = make_unique<vk::CommandPool>(*device, graphics_queue,
@@ -86,36 +126,31 @@ void Application::CreateSyncObjects() {
       vk::semaphore_create_info_template;
 
   VkFenceCreateInfo fence_create_info = vk::fence_create_info_template;
-
-  image_available_semaphores.resize(framebuffers.size());
-  render_finished_semaphores.resize(framebuffers.size());
-  fences.resize(framebuffers.size());
+  fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
   VkResult result;
 
-  for (int i = 0; i < framebuffers.size(); i++) {
-    result = vkCreateSemaphore(device->GetHandle(), &semphore_create_info,
-                               nullptr, &image_available_semaphores[i]);
-    if (result) {
-      throw vk::CriticalException("cant create image available semaphore");
-    }
-
-    result = vkCreateSemaphore(device->GetHandle(), &semphore_create_info,
-                               nullptr, &render_finished_semaphores[i]);
-    if (result) {
-      throw vk::CriticalException("cant create render fished semaphore");
-    }
-
-    result = vkCreateFence(device->GetHandle(), &fence_create_info, nullptr,
-                           &fences[i]);
-    if (result) {
-      throw vk::CriticalException("cant create fence");
-    }
+  result = vkCreateSemaphore(device->GetHandle(), &semphore_create_info,
+                             nullptr, &image_available_semaphore);
+  if (result) {
+    throw vk::CriticalException("cant create image available semaphore");
   }
 
-  TRACE("image available semaphores created");
-  TRACE("render finished semaphores created");
-  TRACE("fences created");
+  result = vkCreateSemaphore(device->GetHandle(), &semphore_create_info,
+                             nullptr, &render_finished_semaphore);
+  if (result) {
+    throw vk::CriticalException("cant create render fished semaphore");
+  }
+
+  result =
+      vkCreateFence(device->GetHandle(), &fence_create_info, nullptr, &fence);
+  if (result) {
+    throw vk::CriticalException("cant create fence");
+  }
+
+  TRACE("image available semaphore created");
+  TRACE("render finished semaphore created");
+  TRACE("fence created");
 }
 
 void Application::CreateGraphicsPipeline() {

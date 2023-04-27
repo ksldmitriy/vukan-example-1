@@ -39,7 +39,8 @@ public:
   Swapchain(Swapchain &) = delete;
   Swapchain &operator=(Swapchain &) = delete;
 
-  uint32_t AcquireNextImage();
+  VkSwapchainKHR GetHandle();
+  uint32_t AcquireNextImage(VkSemaphore semaphore);
   VkSurfaceFormatKHR GetFormat();
   VkExtent2D GetExtent();
   const vector<VkImage>& GetImages();
