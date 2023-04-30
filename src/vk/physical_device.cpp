@@ -65,17 +65,15 @@ uint32_t PhysicalDevice::ChooseQueueFamily(VkQueueFlags requirements) {
     }
   }
 
-  throw QueueFamilyNotFoundException(); 
+  throw QueueFamilyNotFoundException();
 };
 
-uint32_t PhysicalDevice::ChooseMemoryType(VkMemoryPropertyFlags properties,
-                                          VkMemoryHeapFlags heap_properties,
-                                          uint32_t memory_types) {
+uint32_t PhysicalDevice::ChooseMemoryType(ChooseMemoryTypeInfo &choose_info) {
   bool valid_heaps[VK_MAX_MEMORY_HEAPS] = {0};
 
   for (int i = 0; i < memory_properties.memoryHeapCount; i++) {
     VkMemoryHeap heap = memory_properties.memoryHeaps[i];
-    if ((heap.flags & heap_properties) == heap_properties) {
+    if ((heap.flags & choose_info.heap_properties) ==choose_info.heap_properties) {
       valid_heaps[i] = true;
     };
   }
@@ -83,13 +81,13 @@ uint32_t PhysicalDevice::ChooseMemoryType(VkMemoryPropertyFlags properties,
   for (int i = 0; i < memory_properties.memoryTypeCount; i++) {
     VkMemoryType memory_type = memory_properties.memoryTypes[i];
     if (valid_heaps[memory_type.heapIndex] &&
-        (memory_type.propertyFlags & properties) == properties &&
-        (1 << i & memory_types)) {
+        (memory_type.propertyFlags & choose_info.properties) == choose_info.properties &&
+        (1 << i & choose_info.memory_types)) {
       return i;
     }
   }
 
-  throw MemoryTypeNotFoundException(); 
+  throw MemoryTypeNotFoundException();
 }
 
 } // namespace vk

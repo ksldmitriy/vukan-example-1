@@ -7,6 +7,12 @@ using namespace std;
 
 namespace vk {
 
+struct ChooseMemoryTypeInfo {
+  VkMemoryPropertyFlags properties;
+  VkMemoryHeapFlags heap_properties;
+  uint32_t memory_types;
+};
+
 class PhysicalDevice {
 private:
   VkPhysicalDevice handle;
@@ -22,9 +28,7 @@ public:
   VkPhysicalDevice GetHandle();
   VkPhysicalDeviceLimits GetLimits();
   uint32_t ChooseQueueFamily(VkQueueFlags requirements);
-  uint32_t ChooseMemoryType(VkMemoryPropertyFlags properties,
-                            VkMemoryHeapFlags heap_properties,
-                            uint32_t memory_types);
+  uint32_t ChooseMemoryType(ChooseMemoryTypeInfo &choose_info);
   VkSurfaceCapabilitiesKHR GetSurfaceCapabilities(VkSurfaceKHR surface);
   vector<VkSurfaceFormatKHR> GetSurfaceFormats(VkSurfaceKHR surface);
   vector<VkPresentModeKHR> GetSurfacePresentModes(VkSurfaceKHR surface);

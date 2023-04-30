@@ -1,70 +1,23 @@
 * Realistic tasks
 
 ** Current tasks
-*** Semaphore and fence
-- [X] Create semaphore for application
-- [X] Create fence for application
-- [ ] Maybe create semaphore class
-- [ ] Maybe create semaphore class
-
   
-*** Window 
-- [X] Create window class
-- [X] Window error handling
-- [X] Create swapchain class
-  - [X] Get swapchain from window
-- [X] Poll events
-  - [X] Exit on ESC
-- [X] Normal destructor
-
 *** Pipeline
 - [X] Dump graphics pipeline implementation
-- [ ] Graphics pipeline class 
+- [ ] Graphics pipeline class
+- [ ] Create pipeline layout
+  
+  
+*** Descriptors
+- [ ] Create descriptors set class
+- [ ] Create descriptors
+
+*** Error handling
+- [ ] Error handling in Application class
 
 ** Commit logs
-- Semaphores and fence created
-- Command buffer begin and end methods added
-
-** Archive
-*** Init vulkan
-- [X] Create instance
-  - [X] Create device
-    - [X] Choose features (removed)
-    - [X] Choose layers (removed)
-    - [X] Queues
-      - [X] Create queue class
-      - [X] Choose queues
-      - [X] Return chose queues
-
-        
-*** Exceptions and Logs
-- [X] Exceptions
-- [X] Critical exception
-
-     
-*** Swapchain 
-
-
-*** Commands
-- [X] Create command pool class
-- [X] Create command buffer class
-- [X] Provide integration with queue class
-
-
-*** Render pass
-- [X] Create dump render pass
-
   
-*** Framebuffers
-- [X] Init framebuffers
 
-  
-*** Shader module
-- [X] Create shader module class
-- [X] Read shader from file
-- [X] Load shader to vulkan
-
-  
 * Far future tasks
 ** [ ] If this is checked, you are really cool
   - [ ] Choose physical device
@@ -72,6 +25,7 @@
     - [ ] Choose: format, present mode, transform and extend
   - [ ] Create several queues of same family if possible
   - [ ] Pipeline dynamic state
+  - [ ] Refactor vk::DeviceMemory or completely remake
 
     
 ** Ideas

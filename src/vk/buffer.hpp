@@ -1,6 +1,8 @@
 #pragma once
 #include "exception.hpp"
+#include "queue.hpp"
 #include <vulkan/vulkan.h>
+#include "device.hpp"
 
 using namespace std;
 
@@ -11,12 +13,12 @@ class DeviceMemory;
 struct BufferCreateInfo {
   VkDeviceSize size;
   VkBufferUsageFlags usage;
-  uint32_t queue;
+  Queue queue;
 };
 
 class Buffer {
 private:
-  VkDevice device;
+  Device* device;
   VkBuffer handle;
   DeviceMemory *memory;
   bool is_binded;
@@ -25,7 +27,7 @@ private:
   VkMemoryRequirements requirements;
 
 public:
-  Buffer(VkDevice device, BufferCreateInfo &create_info);
+  Buffer(Device& device, BufferCreateInfo &create_info);
   Buffer(Buffer &) = delete;
   Buffer &operator=(Buffer &) = delete;
   ~Buffer();

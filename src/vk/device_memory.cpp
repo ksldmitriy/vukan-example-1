@@ -31,7 +31,7 @@ DeviceMemory::DeviceMemory(Device &device, VkDeviceSize size, uint32_t type) {
 
 DeviceMemory::~DeviceMemory() { Free(); }
 
-VkDeviceSize DeviceMemory::CalculateMemorySize(vector<Buffer *> buffers) {
+VkDeviceSize DeviceMemory::CalculateMemorySize(vector<Buffer *>& buffers) {
   VkDeviceSize size = 0;
 
   for (int i = 0; i < buffers.size(); i++) {

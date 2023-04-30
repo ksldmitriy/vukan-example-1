@@ -5,6 +5,8 @@ rm info-logs
 
 echo === CMAKE ===
 
+set -e
+
 cmake -S ./src -B ./out  
 
 mv out/compile_commands.json .

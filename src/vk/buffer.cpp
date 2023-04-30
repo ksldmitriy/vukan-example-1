@@ -3,8 +3,8 @@
 
 namespace vk {
 
-Buffer::Buffer(VkDevice device, BufferCreateInfo &create_info) {
-  this->device = device;
+Buffer::Buffer(Device &device, BufferCreateInfo &create_info) {
+  this->device = &device;
   is_binded = false;
 
   VkBufferCreateInfo vk_create_info;
@@ -12,18 +12,21 @@ Buffer::Buffer(VkDevice device, BufferCreateInfo &create_info) {
   vk_create_info.pNext = nullptr;
   vk_create_info.flags = 0;
 
+  uint32_t queue_family = create_info.queue.GetFamily();
+
   vk_create_info.size = create_info.size;
   vk_create_info.usage = create_info.usage;
   vk_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
   vk_create_info.queueFamilyIndexCount = 1;
-  vk_create_info.pQueueFamilyIndices = &create_info.queue;
+  vk_create_info.pQueueFamilyIndices = &queue_family;
 
-  VkResult result = vkCreateBuffer(device, &vk_create_info, nullptr, &handle);
+  VkResult result =
+      vkCreateBuffer(device.GetHandle(), &vk_create_info, nullptr, &handle);
   if (result) {
     throw CriticalException("cant create buffer");
   }
 
-  vkGetBufferMemoryRequirements(device, handle, &requirements);
+  vkGetBufferMemoryRequirements(device.GetHandle(), handle, &requirements);
 }
 
 Buffer::~Buffer() {
@@ -36,7 +39,7 @@ void Buffer::Destroy() {
   memory->FreeBuffer(handle);
 
   is_binded = false;
-  vkDestroyBuffer(device, handle, nullptr);
+  vkDestroyBuffer(device->GetHandle(), handle, nullptr);
   handle = 0;
 }
 

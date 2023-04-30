@@ -28,15 +28,63 @@ void Application::Prepare() {
   InitFramebuffers();
   CreateGraphicsPipeline();
   CreateSyncObjects();
+  CreateVertexBuffer();
   CreateCommandBuffer();
+
+  DEBUG("application prepared");
 }
 
 void Application::RenderLoop() {
+  DEBUG("render loop launched");
+
   while (!window->ShouldClose()) {
     Draw();
 
-	window->PollEvents();
+    window->PollEvents();
   }
+
+  DEBUG("render loop exit");
+}
+
+void Application::CreateVertexBuffer() {
+  const Vertex vertices[3] = {{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+                        {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+                        {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
+
+
+  vk::BufferCreateInfo create_info;
+  create_info.queue = graphics_queue;
+  create_info.size = sizeof(vertices); 
+  create_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+
+  vertex_buffer = make_unique<vk::Buffer>(*device, create_info);
+
+  vk::PhysicalDevice &physical_device = device->GetPhysicalDevice();
+
+  vk::ChooseMemoryTypeInfo choose_info;
+  choose_info.memory_types = vertex_buffer->GetMemoryTypes();
+  choose_info.heap_properties = 0;
+  choose_info.properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+
+  uint32_t memory_type = physical_device.ChooseMemoryType(choose_info);
+
+  vector<vk::Buffer *> buffers = {vertex_buffer.get()};
+
+  VkDeviceSize memory_size = vk::DeviceMemory::CalculateMemorySize(buffers);
+
+  vertex_buffer_memory =
+      make_unique<vk::DeviceMemory>(*device, memory_size, memory_type);
+
+  vertex_buffer_memory->BindBuffer(*vertex_buffer);
+
+  TRACE("vertex buffer created and binded to vertex buffer memory");
+
+  char* mapped_memory = (char*)vertex_buffer->Map();
+
+  memcpy(mapped_memory, (char*)vertices, sizeof(vertices));
+
+  vertex_buffer->Flush();
+  vertex_buffer->Unmap();
 }
 
 void Application::Draw() {
@@ -119,6 +167,11 @@ void Application::CreateCommandBuffer() {
     vkCmdBindPipeline(command_buffer->GetHandle(),
                       VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
+	VkBuffer vertex_buffers[] = {vertex_buffer->GetHandle()};
+	VkDeviceSize offsets[] = {0};
+
+	vkCmdBindVertexBuffers(command_buffer->GetHandle(), 0, 1, vertex_buffers, offsets);
+        
     vkCmdDraw(command_buffer->GetHandle(), 3, 1, 0, 0);
 
     vkCmdEndRenderPass(command_buffer->GetHandle());
@@ -183,12 +236,15 @@ void Application::CreateGraphicsPipeline() {
   VkPipelineShaderStageCreateInfo shader_stages[2] = {
       vertex_shader_stage_create_info, fragment_shader_stage_create_info};
 
+  auto binding_description = Vertex::GetBindingDescription();
+  auto attribute_descriptions = Vertex::GetAttributeDescriptions();
+
   VkPipelineVertexInputStateCreateInfo vertex_input =
       vk::vertex_input_create_info_template;
-  vertex_input.vertexBindingDescriptionCount = 0;
-  vertex_input.pVertexBindingDescriptions = nullptr;
-  vertex_input.vertexAttributeDescriptionCount = 0;
-  vertex_input.pVertexAttributeDescriptions = 0;
+  vertex_input.vertexBindingDescriptionCount = 1;
+  vertex_input.pVertexBindingDescriptions = &binding_description;
+  vertex_input.vertexAttributeDescriptionCount = attribute_descriptions.size();
+  vertex_input.pVertexAttributeDescriptions = attribute_descriptions.data();
 
   VkPipelineInputAssemblyStateCreateInfo input_assembly_create_info =
       vk::pipeline_input_assembly_create_info_template;

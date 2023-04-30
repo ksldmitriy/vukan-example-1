@@ -49,7 +49,7 @@ public:
   DeviceMemory &operator=(DeviceMemory &) = delete;
   ~DeviceMemory();
 
-  static VkDeviceSize CalculateMemorySize(vector<Buffer *> buffers);
+  static VkDeviceSize CalculateMemorySize(vector<Buffer *>& buffers);
   void PrintSegments();
   void BindBuffer(Buffer &buffer);
   void Free();
