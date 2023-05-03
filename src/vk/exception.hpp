@@ -13,16 +13,20 @@ public:
 
 class MemoryTypeNotFoundException : public IException {
 private:
+protected:
+  string Message() { return "suitable memory type not found"; };
+
 public:
   MemoryTypeNotFoundException() : ::IException(){};
-  string Message() { return "suitable memory type not found"; };
 };
 
 class QueueFamilyNotFoundException : public IException {
 private:
+protected:
+  string Message() { return "suitable queue family not found"; };
+
 public:
   QueueFamilyNotFoundException() : ::IException(){};
-  string Message() { return "suitable queue family not found"; };
 };
 
 } // namespace vk

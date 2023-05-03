@@ -21,8 +21,3 @@ glslc shaders/shader.frag -o shaders/frag.spv
 
 echo === RUN ===
  ./out/best_program
-
-echo === LOGS ===
-./logs.sh 
-
-

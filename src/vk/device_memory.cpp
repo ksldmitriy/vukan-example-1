@@ -56,8 +56,6 @@ void *DeviceMemory::MapMemory(VkBuffer buffer) {
     throw CriticalException("cant map memory");
   }
 
-  cout << mapped_segment.offset << " " << buffer_segment.buffer_offset << endl;
-
   return (char *)mapped_ptr - mapped_segment.offset +
          buffer_segment.buffer_offset;
 }

@@ -4,12 +4,12 @@
 int main() {
   setup_logs();
 
-  Application application;
-  
   try {
+    Application application;
     application.Run();
   } catch (IException &e) {
-	ERROR("application exit afer unhandled excpetion: {0}", (string)e);
+    ERROR("application exit afer unhandled excpetion: {0}", (string)e);
+    return -1;
   };
 
   INFO("aeee");

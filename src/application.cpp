@@ -31,6 +31,8 @@ void Application::Prepare() {
   CreateVertexBuffer();
   CreateCommandBuffer();
 
+  program_start = now();
+
   DEBUG("application prepared");
 }
 
@@ -38,6 +40,8 @@ void Application::RenderLoop() {
   DEBUG("render loop launched");
 
   while (!window->ShouldClose()) {
+    UpdateRenderData();
+
     Draw();
 
     window->PollEvents();
@@ -46,19 +50,66 @@ void Application::RenderLoop() {
   DEBUG("render loop exit");
 }
 
+void Application::UpdateRenderData() {
+  duration time_from_start = now() - program_start;
+  float seconds_from_start =
+      chrono::duration_cast<chrono::milliseconds>(time_from_start).count() /
+      1000.f;
+
+  vector<InstanceData> zalupa_data;
+
+  for (int y = 0; y < sprites_count.y; y++) {
+    for (int x = 0; x < sprites_count.x; x++) {
+      InstanceData zalupa;
+      zalupa.pos = {sin(seconds_from_start) - 0.5,
+                    cos(seconds_from_start) - 0.5};
+      zalupa.pos *= 0.0;
+      zalupa.pos +=
+          glm::fvec2{x / (float)sprites_count.x, y / (float)sprites_count.y};
+      cout << zalupa.pos.x << " " << zalupa.pos.y << endl;
+
+      zalupa.rot = seconds_from_start + 3.1415 * ((x + y) % 2);
+
+      zalupa_data.push_back(zalupa);
+    }
+  }
+
+  cout << endl;
+
+  char *mapped_memory = (char *)zalupa_buffer->Map();
+
+  memcpy(mapped_memory, (char *)zalupa_data.data(),
+         zalupa_data.size() * sizeof(zalupa_data[0]));
+
+  zalupa_buffer->Flush();
+  zalupa_buffer->Unmap();
+}
+
 void Application::CreateVertexBuffer() {
-  const Vertex vertices[3] = {{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+  Vertex vertices[3] = {{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
                         {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
                         {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
 
+  for (int i = 0; i < 3; i++) {
+    double angle = i * -3.14 / 1.5;
+    glm::fvec2 pos = {sin(angle), -cos(angle)};
+    VkExtent2D extent = swapchain->GetExtent();
+    vertices[i].pos = pos / 6.f;
+  }
 
+  // create buffers
   vk::BufferCreateInfo create_info;
   create_info.queue = graphics_queue;
-  create_info.size = sizeof(vertices); 
+  create_info.size = sizeof(vertices);
   create_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
   vertex_buffer = make_unique<vk::Buffer>(*device, create_info);
 
+  create_info.size = sprites_count.x * sprites_count.y * sizeof(InstanceData);
+
+  zalupa_buffer = make_unique<vk::Buffer>(*device, create_info);
+
+  // allocate memory
   vk::PhysicalDevice &physical_device = device->GetPhysicalDevice();
 
   vk::ChooseMemoryTypeInfo choose_info;
@@ -68,7 +119,7 @@ void Application::CreateVertexBuffer() {
 
   uint32_t memory_type = physical_device.ChooseMemoryType(choose_info);
 
-  vector<vk::Buffer *> buffers = {vertex_buffer.get()};
+  vector<vk::Buffer *> buffers = {vertex_buffer.get(), zalupa_buffer.get()};
 
   VkDeviceSize memory_size = vk::DeviceMemory::CalculateMemorySize(buffers);
 
@@ -76,15 +127,19 @@ void Application::CreateVertexBuffer() {
       make_unique<vk::DeviceMemory>(*device, memory_size, memory_type);
 
   vertex_buffer_memory->BindBuffer(*vertex_buffer);
+  vertex_buffer_memory->BindBuffer(*zalupa_buffer);
 
-  TRACE("vertex buffer created and binded to vertex buffer memory");
+  TRACE("vertex buffer created and binded to memory");
 
-  char* mapped_memory = (char*)vertex_buffer->Map();
+  // load data
+  char *mapped_memory = (char *)vertex_buffer->Map();
 
-  memcpy(mapped_memory, (char*)vertices, sizeof(vertices));
+  memcpy(mapped_memory, (char *)vertices, sizeof(vertices));
 
   vertex_buffer->Flush();
   vertex_buffer->Unmap();
+
+  TRACE("data loaded to vertex buffers");
 }
 
 void Application::Draw() {
@@ -167,12 +222,15 @@ void Application::CreateCommandBuffer() {
     vkCmdBindPipeline(command_buffer->GetHandle(),
                       VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-	VkBuffer vertex_buffers[] = {vertex_buffer->GetHandle()};
-	VkDeviceSize offsets[] = {0};
+    VkBuffer vertex_buffers[] = {vertex_buffer->GetHandle(),
+                                 zalupa_buffer->GetHandle()};
+    VkDeviceSize offsets[] = {0, 0};
 
-	vkCmdBindVertexBuffers(command_buffer->GetHandle(), 0, 1, vertex_buffers, offsets);
-        
-    vkCmdDraw(command_buffer->GetHandle(), 3, 1, 0, 0);
+    vkCmdBindVertexBuffers(command_buffer->GetHandle(), 0, 2, vertex_buffers,
+                           offsets);
+
+    vkCmdDraw(command_buffer->GetHandle(), 3, sprites_count.x * sprites_count.y,
+              0, 0);
 
     vkCmdEndRenderPass(command_buffer->GetHandle());
 
@@ -236,13 +294,29 @@ void Application::CreateGraphicsPipeline() {
   VkPipelineShaderStageCreateInfo shader_stages[2] = {
       vertex_shader_stage_create_info, fragment_shader_stage_create_info};
 
-  auto binding_description = Vertex::GetBindingDescription();
-  auto attribute_descriptions = Vertex::GetAttributeDescriptions();
+  vector<VkVertexInputBindingDescription> binding_description;
+  auto vertex_binding_description = Vertex::GetBindingDescription();
+  auto zalupa_binding_description = InstanceData::GetBindingDescription();
+
+  binding_description.push_back(vertex_binding_description);
+  binding_description.push_back(zalupa_binding_description);
+
+  vector<VkVertexInputAttributeDescription> attribute_descriptions;
+  auto vertex_attribute_descriptions = Vertex::GetAttributeDescriptions();
+  auto zalupa_attribute_descriptions = InstanceData::GetAttributeDescriptions();
+
+  attribute_descriptions.insert(attribute_descriptions.end(),
+                                vertex_attribute_descriptions.begin(),
+                                vertex_attribute_descriptions.end());
+
+  attribute_descriptions.insert(attribute_descriptions.end(),
+                                zalupa_attribute_descriptions.begin(),
+                                zalupa_attribute_descriptions.end());
 
   VkPipelineVertexInputStateCreateInfo vertex_input =
       vk::vertex_input_create_info_template;
-  vertex_input.vertexBindingDescriptionCount = 1;
-  vertex_input.pVertexBindingDescriptions = &binding_description;
+  vertex_input.vertexBindingDescriptionCount = binding_description.size();
+  vertex_input.pVertexBindingDescriptions = binding_description.data();
   vertex_input.vertexAttributeDescriptionCount = attribute_descriptions.size();
   vertex_input.pVertexAttributeDescriptions = attribute_descriptions.data();
 

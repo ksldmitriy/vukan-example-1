@@ -9,6 +9,9 @@ class IException {
 private:
   shared_ptr<IException> sub_exceipton;
 
+protected:
+  virtual string Message() = 0;
+
 public:
   IException() = default;
   IException(shared_ptr<IException> sub_exception) {
@@ -21,17 +24,18 @@ public:
     }
     return result;
   }
-  virtual string Message() = 0;
 };
 
 class CriticalException : public IException {
 private:
   string message;
 
+protected:
+  string Message() { return message; }
+
 public:
   CriticalException(string message) {
     this->message = message;
     ERROR(message);
   }
-  string Message() { return message; }
 };

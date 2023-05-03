@@ -14,11 +14,11 @@ void setup_logs() {
 
   info_file_logger_sink = make_shared<spdlog::sinks::basic_file_sink_mt>("info-logs");
   info_file_logger_sink->set_pattern("[%I:%M:%S %o] [%^%l%$]: %v");
-  info_file_logger_sink->set_level(spdlog::level::info);
+  info_file_logger_sink->set_level(spdlog::level::debug);
   
   terminal_logger_sink = make_shared<spdlog::sinks::stdout_color_sink_mt>();
   terminal_logger_sink->set_pattern("[%o] [%^%l%$]: %v");
-  terminal_logger_sink->set_level(spdlog::level::info);
+  terminal_logger_sink->set_level(spdlog::level::debug);
 
   vector<spdlog::sink_ptr> sinks = {info_file_logger_sink, debug_file_logger_sink, terminal_logger_sink};
 

@@ -11,47 +11,25 @@
 #include "vk/swapchain.hpp"
 #include "window.hpp"
 #include <GLFW/glfw3.h>
-#include <array>
-#include <glm/glm.hpp>
 #include <iostream>
 #include <memory>
+#include <chrono>
+#include "render_structs.hpp"
+
+chrono::high_resolution_clock::time_point typedef time_point;
+chrono::high_resolution_clock::duration typedef duration;
+const auto now = chrono::high_resolution_clock::now;
 
 using namespace std;
-
-struct Vertex {
-  glm::fvec2 pos;
-  glm::fvec3 color;
-
-  static VkVertexInputBindingDescription GetBindingDescription() { // TODO
-    VkVertexInputBindingDescription binding_description{};
-    binding_description.binding = 0;
-    binding_description.stride = sizeof(Vertex);
-    binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-    return binding_description;
-  }
-
-  static array<VkVertexInputAttributeDescription, 2>
-  GetAttributeDescriptions() {
-    array<VkVertexInputAttributeDescription, 2> attribute_descriptions{};
-    attribute_descriptions[0].binding = 0;
-    attribute_descriptions[0].location = 0;
-    attribute_descriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-    attribute_descriptions[0].offset = offsetof(Vertex, pos);
-
-    attribute_descriptions[1].binding = 0;
-    attribute_descriptions[1].location = 1;
-    attribute_descriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attribute_descriptions[1].offset = offsetof(Vertex, color);
-
-    return attribute_descriptions;
-  }
-};
 
 class Application {
 private:
   const int frames_in_flight = 2;
 
+  const glm::ivec2 sprites_count = {30, 30};
+  
+  time_point program_start;
+  
   unique_ptr<vk::Instance> instance;
   unique_ptr<vk::Device> device;
 
@@ -63,12 +41,9 @@ private:
   unique_ptr<vk::Swapchain> swapchain;
 
   unique_ptr<vk::DeviceMemory> vertex_buffer_memory;
-  unique_ptr<vk::Buffer> vertex_buffer;
-
+  unique_ptr<vk::Buffer> vertex_buffer, zalupa_buffer;
   vk::Queue graphics_queue;
-
   VkRenderPass render_pass;
-
   VkPipelineLayout pipeline_layout;
 
   VkPipeline pipeline;
@@ -84,6 +59,7 @@ private:
   void Draw();
   void Render(uint32_t next_image_index);
   void Present(uint32_t next_image_index);
+  void UpdateRenderData();
 
   void CreateVertexBuffer();
 
