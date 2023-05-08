@@ -12,6 +12,8 @@ void Application::Run() {
 
   Prepare();
 
+  //  return; // TEMP
+
   RenderLoop();
 }
 
@@ -26,9 +28,17 @@ void Application::InitVulkan() {
 void Application::Prepare() {
   CreateRenderPass();
   InitFramebuffers();
-  CreateGraphicsPipeline();
   CreateSyncObjects();
-  CreateVertexBuffer();
+
+  CreateVertexInputBuffers();
+  CreateUniformBuffer();
+
+  CreateDescriptorSetLayout();
+  CreateDescriptorPool();
+  AllocateDescriptorSet();
+  UpdateDescriptorSet();
+
+  CreateGraphicsPipeline();
   CreateCommandBuffer();
 
   program_start = now();
@@ -40,7 +50,7 @@ void Application::RenderLoop() {
   DEBUG("render loop launched");
 
   while (!window->ShouldClose()) {
-    UpdateRenderData();
+    Update();
 
     Draw();
 
@@ -50,42 +60,149 @@ void Application::RenderLoop() {
   DEBUG("render loop exit");
 }
 
+void Application::PreUpdate() { time_from_start = now() - program_start; }
+
+void Application::Update() {
+  PreUpdate();
+  UpdateRenderData();
+}
+
+void Application::UpdateDescriptorSet() {
+  VkDescriptorBufferInfo buffer_info;
+  buffer_info.buffer = uniform_buffer->GetHandle();
+  buffer_info.offset = 0;
+  buffer_info.range = VK_WHOLE_SIZE;
+
+  VkWriteDescriptorSet write_set = vk::write_descriptor_set_template;
+  write_set.dstSet = descriptor_set;
+  write_set.dstBinding = 0;
+  write_set.dstArrayElement = 0;
+  write_set.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  write_set.descriptorCount = 1;
+  write_set.pBufferInfo = &buffer_info;
+
+  vkUpdateDescriptorSets(device->GetHandle(), 1, &write_set, 0, nullptr);
+
+  TRACE("descriptors set updated");
+}
+
+void Application::AllocateDescriptorSet() {
+  VkDescriptorSetAllocateInfo allocate_info =
+      vk::descriptor_set_allocate_info_template;
+  allocate_info.descriptorPool = descriptors_pool;
+  allocate_info.descriptorSetCount = 1;
+  allocate_info.pSetLayouts = &descriptor_set_layout;
+
+  VkResult result = vkAllocateDescriptorSets(device->GetHandle(),
+                                             &allocate_info, &descriptor_set);
+  if (result) {
+    throw vk::CriticalException("cant allocate descriptor set");
+  }
+
+  TRACE("descriptor set allocated");
+}
+
+void Application::CreateDescriptorPool() {
+  VkDescriptorPoolSize pool_size;
+  pool_size.descriptorCount = 1;
+  pool_size.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
+  VkDescriptorPoolCreateInfo create_info =
+      vk::descriptor_pool_create_info_template;
+  create_info.poolSizeCount = 1;
+  create_info.pPoolSizes = &pool_size;
+  create_info.maxSets = 1;
+
+  VkResult result = vkCreateDescriptorPool(device->GetHandle(), &create_info,
+                                           nullptr, &descriptors_pool);
+  if (result) {
+    throw vk::CriticalException("cant create descriptor pool");
+  }
+
+  TRACE("descriptor pool created");
+}
+
+void Application::CreateDescriptorSetLayout() {
+  VkDescriptorSetLayoutBinding ubo_layout_binding;
+  ubo_layout_binding.binding = 0;
+  ubo_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  ubo_layout_binding.descriptorCount = 1;
+  ubo_layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  ubo_layout_binding.pImmutableSamplers = nullptr;
+
+  VkDescriptorSetLayoutCreateInfo create_info =
+      vk::descriptor_set_layout_create_info_template;
+  create_info.bindingCount = 1;
+  create_info.pBindings = &ubo_layout_binding;
+
+  VkResult result = vkCreateDescriptorSetLayout(
+      device->GetHandle(), &create_info, nullptr, &descriptor_set_layout);
+  if (result) {
+    throw vk::CriticalException("cant create descriptor set layout");
+  }
+
+  TRACE("descriptor set layout created");
+}
+
 void Application::UpdateRenderData() {
-  duration time_from_start = now() - program_start;
   float seconds_from_start =
-      chrono::duration_cast<chrono::milliseconds>(time_from_start).count() /
-      1000.f;
+      chrono::duration_cast<chrono::microseconds>(time_from_start).count() /
+      1000.f / 1000.f;
+
+  seconds_from_start *= 2.5;
 
   vector<InstanceData> zalupa_data;
 
-  for (int y = 0; y < sprites_count.y; y++) {
-    for (int x = 0; x < sprites_count.x; x++) {
-      InstanceData zalupa;
-      zalupa.pos = {sin(seconds_from_start) - 0.5,
-                    cos(seconds_from_start) - 0.5};
-      zalupa.pos *= 0.0;
-      zalupa.pos +=
-          glm::fvec2{x / (float)sprites_count.x, y / (float)sprites_count.y};
-      cout << zalupa.pos.x << " " << zalupa.pos.y << endl;
+  InstanceData zalupa;
+  zalupa.pos = glm::fvec2{0, 0};
+  zalupa.rot = seconds_from_start;
 
-      zalupa.rot = seconds_from_start + 3.1415 * ((x + y) % 2);
+  zalupa_data.push_back(zalupa);
 
-      zalupa_data.push_back(zalupa);
-    }
-  }
-
-  cout << endl;
-
-  char *mapped_memory = (char *)zalupa_buffer->Map();
+  char *mapped_memory = (char *)instance_buffer->Map();
 
   memcpy(mapped_memory, (char *)zalupa_data.data(),
          zalupa_data.size() * sizeof(zalupa_data[0]));
 
-  zalupa_buffer->Flush();
-  zalupa_buffer->Unmap();
+  instance_buffer->Flush();
+  instance_buffer->Unmap();
+
+  UniformData *uniform_data = (UniformData *)uniform_buffer->Map();
+
+  *uniform_data = UniformData{{1, seconds_from_start}};
+
+  uniform_buffer->Flush();
+  uniform_buffer->Unmap();
 }
 
-void Application::CreateVertexBuffer() {
+void Application::CreateUniformBuffer() {
+  vk::BufferCreateInfo create_info;
+  create_info.queue = graphics_queue;
+  create_info.size = sizeof(UniformData);
+  create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+  uniform_buffer = make_unique<vk::Buffer>(*device, create_info);
+
+  vector<vk::Buffer *> buffers = {uniform_buffer.get()};
+  uint32_t uniform_buffer_memory_size =
+      vk::DeviceMemory::CalculateMemorySize(buffers);
+
+  vk::PhysicalDevice &physical_device = device->GetPhysicalDevice();
+
+  vk::ChooseMemoryTypeInfo choose_info;
+  choose_info.memory_types = uniform_buffer->GetMemoryTypes();
+  choose_info.heap_properties = 0;
+  choose_info.properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+
+  uint32_t memory_type = physical_device.ChooseMemoryType(choose_info);
+
+  uniform_buffer_memory = make_unique<vk::DeviceMemory>(
+      *device, uniform_buffer->GetSize(), memory_type);
+
+  uniform_buffer_memory->BindBuffer(*uniform_buffer);
+}
+
+void Application::CreateVertexInputBuffers() {
   Vertex vertices[3] = {{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
                         {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
                         {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
@@ -93,8 +210,7 @@ void Application::CreateVertexBuffer() {
   for (int i = 0; i < 3; i++) {
     double angle = i * -3.14 / 1.5;
     glm::fvec2 pos = {sin(angle), -cos(angle)};
-    VkExtent2D extent = swapchain->GetExtent();
-    vertices[i].pos = pos / 6.f;
+    vertices[i].pos = pos / 6.0f;
   }
 
   // create buffers
@@ -105,9 +221,12 @@ void Application::CreateVertexBuffer() {
 
   vertex_buffer = make_unique<vk::Buffer>(*device, create_info);
 
-  create_info.size = sprites_count.x * sprites_count.y * sizeof(InstanceData);
+  create_info.size = sizeof(InstanceData);
 
-  zalupa_buffer = make_unique<vk::Buffer>(*device, create_info);
+  instance_buffer = make_unique<vk::Buffer>(*device, create_info);
+
+  create_info.size = sizeof(UniformData);
+  create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
   // allocate memory
   vk::PhysicalDevice &physical_device = device->GetPhysicalDevice();
@@ -119,7 +238,7 @@ void Application::CreateVertexBuffer() {
 
   uint32_t memory_type = physical_device.ChooseMemoryType(choose_info);
 
-  vector<vk::Buffer *> buffers = {vertex_buffer.get(), zalupa_buffer.get()};
+  vector<vk::Buffer *> buffers = {vertex_buffer.get(), instance_buffer.get()};
 
   VkDeviceSize memory_size = vk::DeviceMemory::CalculateMemorySize(buffers);
 
@@ -127,7 +246,7 @@ void Application::CreateVertexBuffer() {
       make_unique<vk::DeviceMemory>(*device, memory_size, memory_type);
 
   vertex_buffer_memory->BindBuffer(*vertex_buffer);
-  vertex_buffer_memory->BindBuffer(*zalupa_buffer);
+  vertex_buffer_memory->BindBuffer(*instance_buffer);
 
   TRACE("vertex buffer created and binded to memory");
 
@@ -223,14 +342,17 @@ void Application::CreateCommandBuffer() {
                       VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
     VkBuffer vertex_buffers[] = {vertex_buffer->GetHandle(),
-                                 zalupa_buffer->GetHandle()};
+                                 instance_buffer->GetHandle()};
     VkDeviceSize offsets[] = {0, 0};
 
     vkCmdBindVertexBuffers(command_buffer->GetHandle(), 0, 2, vertex_buffers,
                            offsets);
 
-    vkCmdDraw(command_buffer->GetHandle(), 3, sprites_count.x * sprites_count.y,
-              0, 0);
+    vkCmdBindDescriptorSets(command_buffer->GetHandle(),
+                            VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout, 0,
+                            1, &descriptor_set, 0, nullptr);
+
+    vkCmdDraw(command_buffer->GetHandle(), 3, 1, 0, 0);
 
     vkCmdEndRenderPass(command_buffer->GetHandle());
 
@@ -295,15 +417,16 @@ void Application::CreateGraphicsPipeline() {
       vertex_shader_stage_create_info, fragment_shader_stage_create_info};
 
   vector<VkVertexInputBindingDescription> binding_description;
-  auto vertex_binding_description = Vertex::GetBindingDescription();
-  auto zalupa_binding_description = InstanceData::GetBindingDescription();
+  auto vertex_binding_description = Vertex::GetBindingDescription(0);
+  auto zalupa_binding_description = InstanceData::GetBindingDescription(1);
 
   binding_description.push_back(vertex_binding_description);
   binding_description.push_back(zalupa_binding_description);
 
   vector<VkVertexInputAttributeDescription> attribute_descriptions;
-  auto vertex_attribute_descriptions = Vertex::GetAttributeDescriptions();
-  auto zalupa_attribute_descriptions = InstanceData::GetAttributeDescriptions();
+  auto vertex_attribute_descriptions = Vertex::GetAttributeDescriptions(0, 0);
+  auto zalupa_attribute_descriptions =
+      InstanceData::GetAttributeDescriptions(1, 2);
 
   attribute_descriptions.insert(attribute_descriptions.end(),
                                 vertex_attribute_descriptions.begin(),
@@ -368,8 +491,8 @@ void Application::CreateGraphicsPipeline() {
 
   VkPipelineLayoutCreateInfo pipeline_layout_create_info =
       vk::pipeline_layout_create_info_template;
-  pipeline_layout_create_info.setLayoutCount = 0;
-  pipeline_layout_create_info.pSetLayouts = nullptr;
+  pipeline_layout_create_info.setLayoutCount = 1;
+  pipeline_layout_create_info.pSetLayouts = &descriptor_set_layout;
   pipeline_layout_create_info.pushConstantRangeCount = 0;
   pipeline_layout_create_info.pPushConstantRanges = nullptr;
 

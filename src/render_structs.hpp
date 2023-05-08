@@ -9,14 +9,27 @@ struct Vertex {
   glm::fvec2 pos;
   glm::fvec3 color;
 
-  static VkVertexInputBindingDescription GetBindingDescription();
-  static vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
+  static VkVertexInputBindingDescription
+  GetBindingDescription(uint32_t binding);
+  static vector<VkVertexInputAttributeDescription>
+  GetAttributeDescriptions(uint32_t binding, uint32_t location);
 };
 
 struct InstanceData {
   glm::fvec2 pos;
   float rot;
 
-  static VkVertexInputBindingDescription GetBindingDescription();
-  static vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
+  static VkVertexInputBindingDescription
+  GetBindingDescription(uint32_t binding);
+  static vector<VkVertexInputAttributeDescription>
+  GetAttributeDescriptions(uint32_t binding, uint32_t location);
+};
+
+struct UniformData {
+  glm::fvec2 scale;
+
+  static VkVertexInputBindingDescription
+  GetBindingDescription(uint32_t binding);
+  static vector<VkVertexInputAttributeDescription>
+  GetAttributeDescriptions(uint32_t binding, uint32_t location);
 };

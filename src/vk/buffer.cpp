@@ -6,7 +6,8 @@ namespace vk {
 Buffer::Buffer(Device &device, BufferCreateInfo &create_info) {
   this->device = &device;
   is_binded = false;
-
+  size = create_info.size;
+  
   VkBufferCreateInfo vk_create_info;
   vk_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
   vk_create_info.pNext = nullptr;

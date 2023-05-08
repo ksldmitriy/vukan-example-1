@@ -90,7 +90,10 @@ VkWriteDescriptorSet write_descriptor_set_template = {
     .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
     .pNext = nullptr,
     .dstArrayElement = 0,
-    .descriptorCount = 1};
+    .descriptorCount = 0,
+    .pImageInfo = nullptr,
+    .pBufferInfo = nullptr,
+    .pTexelBufferView = nullptr};
 
 VkSemaphoreCreateInfo semaphore_create_info_template = {
     .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,

@@ -26,9 +26,8 @@ class Application {
 private:
   const int frames_in_flight = 2;
 
-  const glm::ivec2 sprites_count = {30, 30};
-  
   time_point program_start;
+  duration time_from_start;
   
   unique_ptr<vk::Instance> instance;
   unique_ptr<vk::Device> device;
@@ -40,12 +39,17 @@ private:
 
   unique_ptr<vk::Swapchain> swapchain;
 
-  unique_ptr<vk::DeviceMemory> vertex_buffer_memory;
-  unique_ptr<vk::Buffer> vertex_buffer, zalupa_buffer;
+  unique_ptr<vk::DeviceMemory> vertex_buffer_memory, uniform_buffer_memory;
+  unique_ptr<vk::Buffer> vertex_buffer, instance_buffer, uniform_buffer;
+
   vk::Queue graphics_queue;
   VkRenderPass render_pass;
-  VkPipelineLayout pipeline_layout;
 
+  VkDescriptorSetLayout descriptor_set_layout;
+  VkDescriptorPool descriptors_pool;
+  VkDescriptorSet descriptor_set;
+  VkPipelineLayout pipeline_layout;
+  
   VkPipeline pipeline;
 
   vector<VkFramebuffer> framebuffers;
@@ -59,10 +63,20 @@ private:
   void Draw();
   void Render(uint32_t next_image_index);
   void Present(uint32_t next_image_index);
+
+  void PreUpdate();
+  void Update();
   void UpdateRenderData();
 
-  void CreateVertexBuffer();
-
+  void CreateUniformBuffer();
+  void CreateDescriptorSetLayout();
+  void CreateDescriptorPool();
+  void AllocateDescriptorSet();
+  void CreateDescriptors();
+  void UpdateDescriptorSet();
+  
+  void CreateVertexInputBuffers();
+  
   void CreateRenderPass();
   void InitFramebuffers();
   void CreateGraphicsPipeline();
