@@ -1,14 +1,6 @@
 #pragma once
 #include "logs.hpp"
-#include "vk/buffer.hpp"
-#include "vk/command_buffer.hpp"
-#include "vk/command_pool.hpp"
-#include "vk/device.hpp"
-#include "vk/device_memory.hpp"
-#include "vk/exception.hpp"
-#include "vk/instance.hpp"
-#include "vk/shader_module.hpp"
-#include "vk/swapchain.hpp"
+#include "vk/vulkan.hpp"
 #include "window.hpp"
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -28,7 +20,7 @@ private:
 
   time_point program_start;
   duration time_from_start;
-  
+
   unique_ptr<vk::Instance> instance;
   unique_ptr<vk::Device> device;
 
@@ -57,6 +49,8 @@ private:
   unique_ptr<vk::CommandPool> command_pool;
   vector<unique_ptr<vk::CommandBuffer>> command_buffers;
 
+  void RecreatePresentObjects();
+  
   void InitVulkan();
   void Prepare();
   void RenderLoop();

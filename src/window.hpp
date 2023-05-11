@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <map>
-#include <vulkan/vulkan.h>
 
 using namespace std;
 
@@ -23,8 +22,10 @@ private:
 
   static void StaticKeyCallback(GLFWwindow *window, int key, int scancode,
                                 int action, int mods);
-  void KeyCallback(int key, int scancode, int action,
-                   int mods);
+  static void StaticResizeCallback(GLFWwindow *window, int width, int height);
+
+  void KeyCallback(int key, int scancode, int action, int mods);
+  void ResizeCallback(int width, int height);
 
 public:
   Window();

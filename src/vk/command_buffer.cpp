@@ -55,6 +55,8 @@ void CommandBuffer::Dispose() {
                        &handle);
 
   pool->DisposeCommandBufferCallback();
+
+  handle = VK_NULL_HANDLE;
 }
 
 } // namespace vk

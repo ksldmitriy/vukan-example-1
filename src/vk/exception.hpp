@@ -20,13 +20,31 @@ public:
   MemoryTypeNotFoundException() : ::IException(){};
 };
 
+class AcquireNextImageFailedException : public IException {
+private:
+protected:
+  string Message() { return "cant acquire next image"; };
+
+public:
+  AcquireNextImageFailedException() : IException(){};
+};
+
+class PresentFailedException: public IException {
+private:
+protected:
+  string Message() { return "cant present image"; };
+
+public:
+  PresentFailedException() : IException(){};
+};
+
 class QueueFamilyNotFoundException : public IException {
 private:
 protected:
   string Message() { return "suitable queue family not found"; };
 
 public:
-  QueueFamilyNotFoundException() : ::IException(){};
+  QueueFamilyNotFoundException() : IException(){};
 };
 
 } // namespace vk

@@ -12,8 +12,6 @@ void Application::Run() {
 
   Prepare();
 
-  //  return; // TEMP
-
   RenderLoop();
 }
 
@@ -27,7 +25,6 @@ void Application::InitVulkan() {
 
 void Application::Prepare() {
   CreateRenderPass();
-  InitFramebuffers();
   CreateSyncObjects();
 
   CreateVertexInputBuffers();
@@ -38,6 +35,7 @@ void Application::Prepare() {
   AllocateDescriptorSet();
   UpdateDescriptorSet();
 
+  InitFramebuffers();
   CreateGraphicsPipeline();
   CreateCommandBuffer();
 
@@ -52,12 +50,44 @@ void Application::RenderLoop() {
   while (!window->ShouldClose()) {
     Update();
 
-    Draw();
+    try {
+      Draw();
+    } catch (vk::AcquireNextImageFailedException e) {
+      RecreatePresentObjects();
+    } catch (vk::PresentFailedException e) {
+      RecreatePresentObjects();
+    }
 
     window->PollEvents();
   }
 
   DEBUG("render loop exit");
+}
+
+void Application::RecreatePresentObjects() {
+
+  DEBUG("recreating present objects");
+
+  vkQueueWaitIdle(graphics_queue.GetHandle());
+
+  vkDeviceWaitIdle(device->GetHandle());
+
+  window->CreateSurface(instance.get());
+  swapchain = make_unique<vk::Swapchain>(*device, window->GetSurface());
+
+  CreateSyncObjects();
+
+  InitFramebuffers();
+
+  for (int i = 0; i < command_buffers.size(); i++) {
+    command_buffers[i]->Dispose();
+  }
+
+  vkDestroyPipeline(device->GetHandle(), pipeline, nullptr);
+
+  CreateGraphicsPipeline();
+
+  CreateCommandBuffer();
 }
 
 void Application::PreUpdate() { time_from_start = now() - program_start; }
@@ -308,7 +338,7 @@ void Application::Present(uint32_t next_image_index) {
   VkResult result =
       vkQueuePresentKHR(graphics_queue.GetHandle(), &present_info);
   if (result) {
-    throw vk::CriticalException("cant present");
+    throw vk::PresentFailedException();
   }
 }
 

@@ -19,6 +19,7 @@ Window::Window() {
   }
 
   glfwSetKeyCallback(handle, StaticKeyCallback);
+  glfwSetWindowSizeCallback(handle, StaticResizeCallback);
 
   windows_db[handle] = this;
 
@@ -33,6 +34,19 @@ Window::~Window() {
   DEBUG("window destroyed");
 }
 
+void Window::StaticResizeCallback(GLFWwindow *window, int width, int height) {
+  if (!windows_db.contains(window)) {
+    INFO("no window for resize callback");
+    return;
+  }
+
+  windows_db[window]->ResizeCallback(width, height);
+}
+
+void Window::ResizeCallback(int width, int height) {
+  INFO("window resized to {} {}", width, height);
+}
+
 void Window::StaticKeyCallback(GLFWwindow *window, int key, int scancode,
                                int action, int mods) {
   if (!windows_db.contains(window)) {
@@ -44,8 +58,8 @@ void Window::StaticKeyCallback(GLFWwindow *window, int key, int scancode,
 }
 
 void Window::KeyCallback(int key, int scancode, int action, int mods) {
-  if (key== GLFW_KEY_ESCAPE) {
-	glfwSetWindowShouldClose(handle, GLFW_TRUE);
+  if (key == GLFW_KEY_ESCAPE) {
+    glfwSetWindowShouldClose(handle, GLFW_TRUE);
     return;
   }
 }

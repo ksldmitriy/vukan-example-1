@@ -42,6 +42,10 @@ Swapchain::Swapchain(Device &device, VkSurfaceKHR surface) {
   CreateImageViews(device);
 }
 
+Swapchain::~Swapchain() {
+  vkDestroySwapchainKHR(device->GetHandle(), handle, nullptr);
+}
+
 VkSwapchainKHR Swapchain::GetHandle() { return handle; }
 
 uint32_t Swapchain::AcquireNextImage(VkSemaphore semaphore) {
@@ -51,7 +55,7 @@ uint32_t Swapchain::AcquireNextImage(VkSemaphore semaphore) {
       vkAcquireNextImageKHR(device->GetHandle(), handle, UINT64_MAX, semaphore,
                             VK_NULL_HANDLE, &next_image);
   if (result) {
-    throw CriticalException("cant acquire next image");
+    throw AcquireNextImageFailedException();
   }
 
   return next_image;

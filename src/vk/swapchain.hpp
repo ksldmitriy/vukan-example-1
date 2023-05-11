@@ -36,6 +36,7 @@ private:
 
 public:
   Swapchain(Device &device, VkSurfaceKHR surface);
+  ~Swapchain();
   Swapchain(Swapchain &) = delete;
   Swapchain &operator=(Swapchain &) = delete;
 
