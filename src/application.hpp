@@ -1,12 +1,13 @@
 #pragma once
+#include "instance_renderer.hpp"
 #include "logs.hpp"
+#include "render_structs.hpp"
 #include "vk/vulkan.hpp"
 #include "window.hpp"
 #include <GLFW/glfw3.h>
+#include <chrono>
 #include <iostream>
 #include <memory>
-#include <chrono>
-#include "render_structs.hpp"
 
 chrono::high_resolution_clock::time_point typedef time_point;
 chrono::high_resolution_clock::duration typedef duration;
@@ -21,6 +22,8 @@ private:
   time_point program_start;
   duration time_from_start;
 
+  unique_ptr<InstanceRenderer> instance_renderer;
+
   unique_ptr<vk::Instance> instance;
   unique_ptr<vk::Device> device;
 
@@ -31,54 +34,31 @@ private:
 
   unique_ptr<vk::Swapchain> swapchain;
 
-  unique_ptr<vk::DeviceMemory> vertex_buffer_memory, uniform_buffer_memory;
-  unique_ptr<vk::Buffer> vertex_buffer, instance_buffer, uniform_buffer;
-
-  vk::Queue graphics_queue;
   VkRenderPass render_pass;
 
-  VkDescriptorSetLayout descriptor_set_layout;
-  VkDescriptorPool descriptors_pool;
-  VkDescriptorSet descriptor_set;
-  VkPipelineLayout pipeline_layout;
-  
-  VkPipeline pipeline;
+  vk::Queue graphics_queue;
 
   vector<VkFramebuffer> framebuffers;
 
-  unique_ptr<vk::CommandPool> command_pool;
-  vector<unique_ptr<vk::CommandBuffer>> command_buffers;
-
-  void RecreatePresentObjects();
-  
   void InitVulkan();
   void Prepare();
   void RenderLoop();
   void Draw();
   void Render(uint32_t next_image_index);
   void Present(uint32_t next_image_index);
+  void CreateInstanceRenderer();
 
   void PreUpdate();
   void Update();
   void UpdateRenderData();
 
-  void CreateUniformBuffer();
-  void CreateDescriptorSetLayout();
-  void CreateDescriptorPool();
-  void AllocateDescriptorSet();
-  void CreateDescriptors();
-  void UpdateDescriptorSet();
-  
-  void CreateVertexInputBuffers();
-  
   void CreateRenderPass();
   void InitFramebuffers();
-  void CreateGraphicsPipeline();
-  void CreateSyncObjects();
-  void CreateCommandBuffer();
 
   void CreateInstance();
   void CreateDevice();
+
+  void CreateSyncObjects();
 
 public:
   Application() = default;
