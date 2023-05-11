@@ -13,7 +13,6 @@ void InstanceRenderer::Init(InstanceRendererInitInfo &init_info) {
 
   CreateDescriptorSetLayout();
   CreateDescriptorPool();
-  CreateDescriptors();
   AllocateDescriptorSet();
   UpdateDescriptorSet();
 
@@ -271,6 +270,13 @@ void InstanceRenderer::CreateUniformBuffer() {
       *device, uniform_buffer->GetSize(), memory_type);
 
   uniform_buffer_memory->BindBuffer(*uniform_buffer);
+
+  UniformData *uniform_data = (UniformData *)uniform_buffer->Map();
+
+  uniform_data->scale = {1, 1};
+
+  uniform_buffer->Flush();
+  uniform_buffer->Unmap();
 }
 
 void InstanceRenderer::CreateVertexInputBuffers() {

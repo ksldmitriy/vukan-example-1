@@ -46,6 +46,8 @@ void Application::CreateInstanceRenderer() {
   init_info.framebuffers = framebuffers;
   init_info.extent = swapchain->GetExtent();
   init_info.render_pass = render_pass;
+
+  instance_renderer->Init(init_info);
 }
 
 void Application::CreateSyncObjects() {
@@ -102,6 +104,7 @@ void Application::RenderLoop() {
 void Application::PreUpdate() { time_from_start = now() - program_start; }
 
 void Application::Update() {
+  return;
   PreUpdate();
   UpdateRenderData();
 }
