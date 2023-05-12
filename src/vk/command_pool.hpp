@@ -27,6 +27,7 @@ public:
   CommandPool &operator=(CommandPool &) = delete;
   ~CommandPool();
 
+  void Dispose();
   unique_ptr<CommandBuffer> AllocateCommandBuffer(CommandBufferLevel level);
   VkCommandPool GetHandle();
 

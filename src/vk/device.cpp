@@ -1,9 +1,9 @@
 #include "device.hpp"
+#include "../logs.hpp"
 #include "device_memory.hpp"
 #include "templates.hpp"
 #include <algorithm>
 #include <vulkan/vulkan_core.h>
-#include "../logs.hpp"
 
 namespace vk {
 
@@ -20,12 +20,12 @@ Device::Device(shared_ptr<PhysicalDevice> physical_device,
   vk_create_info.queueCreateInfoCount = queue_create_infos.size();
   vk_create_info.pQueueCreateInfos = queue_create_infos.data();
 
-  const char* extensions = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+  const char *extensions = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
   vk_create_info.enabledExtensionCount = 1;
   vk_create_info.ppEnabledExtensionNames = &extensions;
 
   TRACE("device create info generated");
-  
+
   VkResult result = vkCreateDevice(physical_device->GetHandle(),
                                    &vk_create_info, nullptr, &handle);
   if (result) {
@@ -42,6 +42,21 @@ Device::Device(shared_ptr<PhysicalDevice> physical_device,
   }
 
   TRACE("device queues returned");
+}
+
+Device::~Device() {
+  if (handle == VK_NULL_HANDLE) {
+    return;
+  }
+
+  Dispose();
+}
+
+void Device::Dispose() {
+  vkDestroyDevice(handle, nullptr);
+  handle = VK_NULL_HANDLE;
+  
+  DEBUG("device disposed");
 }
 
 vector<VkDeviceQueueCreateInfo> Device::GenerateQueueCreateInfos(

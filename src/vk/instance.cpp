@@ -8,6 +8,21 @@ Instance::Instance(InstanceCreateInfo &create_info) {
   EnumPhysicalDevices();
 }
 
+Instance::~Instance() {
+  if (handle == VK_NULL_HANDLE) {
+    return;
+  }
+
+  Dispose();
+}
+
+void Instance::Dispose() {
+  vkDestroyInstance(handle, nullptr);
+  handle = VK_NULL_HANDLE;
+
+  INFO("vulkan instance destoyer");
+}
+
 void Instance::CreateInstance(InstanceCreateInfo &create_info) {
   VkInstanceCreateInfo vk_create_info;
   vk_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;

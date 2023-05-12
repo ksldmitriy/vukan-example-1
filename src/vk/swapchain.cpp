@@ -43,7 +43,22 @@ Swapchain::Swapchain(Device &device, VkSurfaceKHR surface) {
 }
 
 Swapchain::~Swapchain() {
+  if (handle == VK_NULL_HANDLE) {
+    return;
+  }
+
+  Dispose();
+}
+
+void Swapchain::Dispose() {
+  for (int i = 0; i < images.size(); i++) {
+    vkDestroyImageView(device->GetHandle(), image_views[i], nullptr);
+  }
+
   vkDestroySwapchainKHR(device->GetHandle(), handle, nullptr);
+  handle = VK_NULL_HANDLE;
+
+  DEBUG("swapchain disposed");
 }
 
 VkSwapchainKHR Swapchain::GetHandle() { return handle; }

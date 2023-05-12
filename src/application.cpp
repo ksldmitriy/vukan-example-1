@@ -1,14 +1,31 @@
 #include "application.hpp"
 
+Application ::~Application() {
+  instance_renderer.reset();
+
+  vkDestroyRenderPass(device->GetHandle(), render_pass, nullptr);
+
+  CleanupFramebuffers();
+  
+  CleanupSyncObjects();
+
+  swapchain->Dispose();
+
+  device->Dispose();
+
+  INFO("application destroyed");
+}
+
 void Application::Run() {
   window = unique_ptr<Window>(new Window());
 
   InitVulkan();
 
-  window->CreateSurface(instance.get());
+  window->AttachInstance(*instance);
 
-  swapchain = unique_ptr<vk::Swapchain>(
-      new vk::Swapchain(*device, window->GetSurface()));
+  window->CreateSurface();
+
+  swapchain = make_unique<vk::Swapchain>(*device, window->GetSurface());
 
   Prepare();
 
@@ -27,7 +44,7 @@ void Application::Prepare() {
   CreateRenderPass();
   CreateSyncObjects();
 
-  InitFramebuffers();
+  CreateFramebuffers();
 
   CreateInstanceRenderer();
 
@@ -37,17 +54,15 @@ void Application::Prepare() {
 }
 
 void Application::CreateInstanceRenderer() {
-  InstanceRendererCreateData create_data;
-  create_data.device = device.get();
-  create_data.queue = graphics_queue;
-  instance_renderer = make_unique<InstanceRenderer>(create_data);
+  InstanceRendererCreateInfo create_info;
+  create_info.device = device.get();
+  create_info.queue = graphics_queue;
+  create_info.framebuffers = framebuffers;
+  create_info.extent = swapchain->GetExtent();
+  create_info.render_pass = render_pass;
 
-  InstanceRendererInitInfo init_info;
-  init_info.framebuffers = framebuffers;
-  init_info.extent = swapchain->GetExtent();
-  init_info.render_pass = render_pass;
-
-  instance_renderer->Init(init_info);
+  instance_renderer = make_unique<InstanceRenderer>(create_info);
+  instance_renderer->Init();
 }
 
 void Application::CreateSyncObjects() {
@@ -81,6 +96,12 @@ void Application::CreateSyncObjects() {
   TRACE("fence created");
 }
 
+void Application::CleanupSyncObjects() {
+  vkDestroySemaphore(device->GetHandle(), image_available_semaphore, nullptr);
+  vkDestroySemaphore(device->GetHandle(), render_finished_semaphore, nullptr);
+  vkDestroyFence(device->GetHandle(), fence, nullptr);
+}
+
 void Application::RenderLoop() {
   DEBUG("render loop launched");
 
@@ -90,15 +111,29 @@ void Application::RenderLoop() {
     try {
       Draw();
     } catch (vk::AcquireNextImageFailedException e) {
-      // RecreatePresentObjects();
+      ChangeSurface();
     } catch (vk::PresentFailedException e) {
-      // RecreatePresentObjects();
+      ChangeSurface();
     }
 
     window->PollEvents();
   }
 
   DEBUG("render loop exit");
+}
+
+void Application::ChangeSurface() {
+  window->CreateSurface();
+
+  swapchain = make_unique<vk::Swapchain>(*device, window->GetSurface());
+
+  CleanupSyncObjects();
+  CreateSyncObjects();
+
+  CleanupFramebuffers();
+  CreateFramebuffers();
+  
+  CreateInstanceRenderer();
 }
 
 void Application::PreUpdate() { time_from_start = now() - program_start; }
@@ -145,7 +180,7 @@ void Application::Present(uint32_t next_image_index) {
   }
 }
 
-void Application::InitFramebuffers() {
+void Application::CreateFramebuffers() {
   VkFramebufferCreateInfo create_info = vk::framebuffer_create_info_template;
   create_info.renderPass = render_pass;
   create_info.attachmentCount = 1;
@@ -166,6 +201,12 @@ void Application::InitFramebuffers() {
   }
 
   DEBUG("framebuffers created");
+}
+
+void Application::CleanupFramebuffers(){
+  for (int i = 0; i < framebuffers.size(); i++) {
+    vkDestroyFramebuffer(device->GetHandle(), framebuffers[i], nullptr);
+  }
 }
 
 void Application::CreateRenderPass() {

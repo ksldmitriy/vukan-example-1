@@ -29,9 +29,15 @@ DeviceMemory::DeviceMemory(Device &device, VkDeviceSize size, uint32_t type) {
   memory_segments.push_back(segment);
 }
 
-DeviceMemory::~DeviceMemory() { Free(); }
+DeviceMemory::~DeviceMemory() {
+  if (handle == VK_NULL_HANDLE) {
+    return;
+  }
 
-VkDeviceSize DeviceMemory::CalculateMemorySize(vector<Buffer *>& buffers) {
+  Free();
+}
+
+VkDeviceSize DeviceMemory::CalculateMemorySize(vector<Buffer *> &buffers) {
   VkDeviceSize size = 0;
 
   for (int i = 0; i < buffers.size(); i++) {
@@ -97,9 +103,10 @@ void DeviceMemory::Flush() {
 void DeviceMemory::Unmap() { vkUnmapMemory(device, handle); };
 
 void DeviceMemory::Free() {
-  if (handle) {
-    vkFreeMemory(device, handle, nullptr);
-  }
+  vkFreeMemory(device, handle, nullptr);
+  handle = VK_NULL_HANDLE;
+
+  TRACE("device memory freed");
 }
 
 void DeviceMemory::PrintSegments() {

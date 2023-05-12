@@ -7,6 +7,8 @@ bool Window::glfw_inited = false;
 map<GLFWwindow *, Window *> Window::windows_db;
 
 Window::Window() {
+  surface = VK_NULL_HANDLE;
+
   if (!glfw_inited) {
     InitGLFW();
   }
@@ -27,11 +29,32 @@ Window::Window() {
 }
 
 Window::~Window() {
+  if (!handle) {
+    return;
+  }
+
+  Destroy();
+}
+
+void Window::AttachInstance(vk::Instance &instance) {
+  this->instance = &instance;
+}
+
+void Window::Destroy() {
   windows_db.erase(handle);
 
   glfwDestroyWindow(handle);
 
+  if(surface){
+	DestroySurface();
+  }
+  
   DEBUG("window destroyed");
+}
+
+void Window::DestroySurface(){
+  vkDestroySurfaceKHR(instance->GetHandle(), surface, nullptr);
+  surface = nullptr;
 }
 
 void Window::StaticResizeCallback(GLFWwindow *window, int width, int height) {
@@ -68,7 +91,11 @@ void Window::PollEvents() { glfwPollEvents(); }
 
 bool Window::ShouldClose() { return glfwWindowShouldClose(handle); }
 
-void Window::CreateSurface(vk::Instance *instance) {
+void Window::CreateSurface() {
+  if(surface){
+	DestroySurface();
+  }
+
   VkResult result =
       glfwCreateWindowSurface(instance->GetHandle(), handle, nullptr, &surface);
   if (result) {

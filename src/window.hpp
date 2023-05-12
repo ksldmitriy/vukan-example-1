@@ -17,7 +17,8 @@ private:
 
   GLFWwindow *handle;
   VkSurfaceKHR surface;
-
+  vk::Instance* instance;
+  
   void InitGLFW();
 
   static void StaticKeyCallback(GLFWwindow *window, int key, int scancode,
@@ -33,14 +34,17 @@ public:
   Window &operator=(Window &) = delete;
   ~Window();
 
-  void CreateSurface(vk::Instance *instance);
+  void AttachInstance(vk::Instance& instance);
+  
+  void Destroy();
+
+  void CreateSurface();
+  void DestroySurface();
   VkSurfaceKHR GetSurface();
+
   void GetInstanceExtensions(const char **&extensions,
                              uint32_t &extensions_count);
 
   bool ShouldClose();
   void PollEvents();
-
-  friend void glfw_key_callback(GLFWwindow *window, int key, int scancode,
-                                int action, int mods);
 };

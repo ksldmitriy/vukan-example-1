@@ -48,12 +48,17 @@ private:
   void Present(uint32_t next_image_index);
   void CreateInstanceRenderer();
 
+  void ChangeSurface();
+
+  void CleanupSyncObjects();
+  void CleanupFramebuffers();
+  
   void PreUpdate();
   void Update();
   void UpdateRenderData();
 
   void CreateRenderPass();
-  void InitFramebuffers();
+  void CreateFramebuffers();
 
   void CreateInstance();
   void CreateDevice();
@@ -64,6 +69,7 @@ public:
   Application() = default;
   Application(Application &) = delete;
   Application &operator=(Application &) = delete;
+  ~Application();
 
   void Run();
 };

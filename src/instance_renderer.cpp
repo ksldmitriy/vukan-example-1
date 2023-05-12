@@ -1,13 +1,17 @@
 #include "instance_renderer.hpp"
 
-InstanceRenderer::InstanceRenderer(InstanceRendererCreateData &create_data) {
-  device = create_data.device;
-  queue = create_data.queue;
+InstanceRenderer::InstanceRenderer(InstanceRendererCreateInfo &create_info) {
+  device = create_info.device;
+  queue = create_info.queue;
+
+  framebuffers = create_info.framebuffers;
+  extent = create_info.extent;
+  render_pass = create_info.render_pass;
 
   DEBUG("instance renderer created");
 }
 
-void InstanceRenderer::Init(InstanceRendererInitInfo &init_info) {
+void InstanceRenderer::Init() {
   CreateVertexInputBuffers();
   CreateUniformBuffer();
 
@@ -16,12 +20,36 @@ void InstanceRenderer::Init(InstanceRendererInitInfo &init_info) {
   AllocateDescriptorSet();
   UpdateDescriptorSet();
 
-  CreatePipeline(init_info.extent, init_info.render_pass);
+  CreatePipeline(extent, render_pass);
 
-  CreateCommandBuffer(init_info.framebuffers, init_info.extent,
-                      init_info.render_pass);
+  CreateCommandBuffer();
 
   DEBUG("instance renderer inited");
+}
+
+InstanceRenderer::~InstanceRenderer() {
+  for (int i = 0; i < command_buffers.size(); i++) {
+    command_buffers[i]->Dispose();
+  }
+
+  command_pool->Dispose();
+
+  vertex_buffer->Destroy();
+  instance_buffer->Destroy();
+  uniform_buffer->Destroy();
+
+  vertex_buffer_memory->Free();
+  uniform_buffer_memory->Free();
+
+  vkDestroyDescriptorSetLayout(device->GetHandle(), descriptor_set_layout, nullptr);
+
+  vkDestroyDescriptorPool(device->GetHandle(), descriptors_pool, nullptr);
+  
+  vkDestroyPipelineLayout(device->GetHandle(), pipeline_layout, nullptr);
+  
+  vkDestroyPipeline(device->GetHandle(), pipeline,  nullptr);
+  
+  DEBUG("instance renderer destroyed");
 }
 
 void InstanceRenderer::Render(uint32_t image_index,
@@ -48,9 +76,7 @@ void InstanceRenderer::Render(uint32_t image_index,
   }
 }
 
-void InstanceRenderer::CreateCommandBuffer(vector<VkFramebuffer> &framebuffers,
-                                           VkExtent2D extent,
-                                           VkRenderPass render_pass) {
+void InstanceRenderer::CreateCommandBuffer() {
   command_pool =
       make_unique<vk::CommandPool>(*device, queue, framebuffers.size());
 

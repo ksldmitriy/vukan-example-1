@@ -40,6 +40,7 @@ public:
   Swapchain(Swapchain &) = delete;
   Swapchain &operator=(Swapchain &) = delete;
 
+  void Dispose();
   VkSwapchainKHR GetHandle();
   uint32_t AcquireNextImage(VkSemaphore semaphore);
   VkSurfaceFormatKHR GetFormat();

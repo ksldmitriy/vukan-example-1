@@ -37,7 +37,9 @@ public:
          DeviceCreateInfo &create_info);
   Device(Device &) = delete;
   Device &operator=(Device &) = delete;
+  ~Device();
 
+  void Dispose();
   PhysicalDevice &GetPhysicalDevice();
   VkDevice GetHandle();
 };

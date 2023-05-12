@@ -23,9 +23,19 @@ CommandPool::CommandPool(Device &device, Queue &queue, uint32_t capacity) {
 }
 
 CommandPool::~CommandPool() {
-  vkDestroyCommandPool(device->GetHandle(), handle, nullptr);
-  TRACE("command pool destroyed");
+  if (handle == VK_NULL_HANDLE) {
+    return;
+  }
+
+  Dispose();
 };
+
+void CommandPool::Dispose() {
+  vkDestroyCommandPool(device->GetHandle(), handle, nullptr);
+  handle = VK_NULL_HANDLE;
+
+  TRACE("command pool destroyed");
+}
 
 unique_ptr<CommandBuffer>
 CommandPool::AllocateCommandBuffer(CommandBufferLevel level) {

@@ -22,7 +22,13 @@ CommandBuffer::CommandBuffer(CommandPool &pool, CommandBufferLevel level) {
   }
 }
 
-CommandBuffer::~CommandBuffer() { Dispose(); }
+CommandBuffer::~CommandBuffer() {
+  if (handle == VK_NULL_HANDLE) {
+    return;
+  }
+
+  Dispose();
+}
 
 VkCommandBuffer CommandBuffer::GetHandle() { return handle; }
 
@@ -47,10 +53,6 @@ void CommandBuffer::End() {
 }
 
 void CommandBuffer::Dispose() {
-  if (handle == VK_NULL_HANDLE) {
-    return;
-  }
-
   vkFreeCommandBuffers(pool->device->GetHandle(), pool->GetHandle(), 1,
                        &handle);
 
